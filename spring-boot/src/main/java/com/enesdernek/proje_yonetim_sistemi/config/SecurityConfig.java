@@ -23,6 +23,8 @@ public class SecurityConfig {
 		    "/api/users/authenticate",
 		    "/api/users/register",
 		    "/v3/api-docs/**",
+		    "/swagger-ui/**",
+		    "/swagger-ui.html",
 		};
 
     @Autowired

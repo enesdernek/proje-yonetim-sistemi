@@ -1,5 +1,9 @@
 package com.enesdernek.proje_yonetim_sistemi.service.concretes;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -8,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
+import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.Role;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
@@ -76,6 +81,27 @@ public class UserManager implements UserService {
 
 		return new AuthResponse(userDto, token);
 
+	}
+
+	@Override
+	public UserDto getAuthenticatedUserByUserId(Long userId) {
+		User user = this.userRepository.findById(userId).orElseThrow(()->new UsernameNotFoundException("Kullanıcı bulunamadı."));
+		UserDto userDto = userMapper.toDto(user);
+		return userDto;
+	}
+
+	@Override
+	public UserDtoPagedResponse getAllUsersPagedByUserIdDesc(int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+		List<User> users = this.userRepository.getAllUsersPagedByUserIdDesc(pageable);
+		Long totalElements = this.userRepository.count();
+	    int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+		List<UserDto> userDtos = this.userMapper.toDtoList(users);
+		UserDtoPagedResponse response = new UserDtoPagedResponse();
+		response.setTotalPages(totalPages);
+		response.setTotalElements(totalElements);
+		response.setUserDtos(userDtos);
+		return response;
 	}
 
 }
