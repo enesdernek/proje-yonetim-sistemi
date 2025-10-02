@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
+import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -46,6 +48,18 @@ public class UserController {
 		SuccessDataResult<AuthResponse> result = new SuccessDataResult<AuthResponse>(
 				this.userService.authenticate(userDtoAuthIU), "Kullanıcı başarıyla giriş yaptı.");
 		return new ResponseEntity<SuccessDataResult<AuthResponse>>(result, HttpStatus.OK);
+	}
+
+	@PutMapping("/change-password")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessResult> changePassword(@RequestBody @Valid PasswordChangeRequest request, Authentication authentication) {
+            User user = (User)authentication.getPrincipal();
+            Long userId = user.getUserId();
+            
+            this.userService.changePassword(userId, request);
+            SuccessResult result = new SuccessResult("Şifre başarıyla değiştirildi.");
+            
+            return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
 	}
 
 	@GetMapping("/me")

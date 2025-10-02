@@ -1,6 +1,7 @@
 package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
 
 
+import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -21,6 +22,8 @@ public interface UserService {
 	public void resendVerification(String email);
 	
 	public void verifyEmail(String email, int code);
+	
+	public void changePassword(Long userId, PasswordChangeRequest request);
 	
 
 

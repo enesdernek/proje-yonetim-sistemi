@@ -12,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -21,7 +23,9 @@ import com.enesdernek.proje_yonetim_sistemi.entity.Role;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyValidException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.FalsePasswordException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidCodeException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidPasswordException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredException;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
@@ -202,6 +206,23 @@ public class UserManager implements UserService {
 		response.setTotalElements(totalElements);
 		response.setUserDtos(userDtos);
 		return response;
+	}
+
+	@Override
+	public void changePassword(Long userId, PasswordChangeRequest request) {
+		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
+		
+		if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new FalsePasswordException("Mevcut şifre yanlış.");
+        }
+		
+		if(passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+		   throw new InvalidPasswordException("Yeni şifre eski şifre ile aynı olamaz.");
+		}
+		
+		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+		userRepository.save(user);
+		
 	}
 
 }

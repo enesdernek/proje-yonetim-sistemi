@@ -15,8 +15,10 @@ import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyConnecte
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyValidException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.FalsePasswordException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidCodeException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidConnectionException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidPasswordException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
@@ -35,6 +37,18 @@ public class GlobalExceptionHandler {
 	    ErrorDataResult<Map<String, String>> result = new ErrorDataResult<>(errors, "Doğrulama hatası oluştu");
 
 	    return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(InvalidPasswordException.class)
+	public ResponseEntity<ErrorResult> handleInvalidPasswordException(InvalidPasswordException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+	}
+	
+	@ExceptionHandler(FalsePasswordException.class)
+	public ResponseEntity<ErrorResult> handleFalsePasswordException(FalsePasswordException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
 	}
 	
 	@ExceptionHandler(InvalidCodeException.class)
