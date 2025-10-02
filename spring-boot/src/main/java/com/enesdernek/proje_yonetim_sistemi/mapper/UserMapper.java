@@ -12,7 +12,6 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 	
-	@Mapping(source = "actualUsername", target = "username")
 	UserDto toDto(User user);
 	
 	User toEntity(UserDtoIU userDtoIU);
