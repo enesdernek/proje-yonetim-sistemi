@@ -3,6 +3,7 @@ package com.enesdernek.proje_yonetim_sistemi.mapper;
 import java.util.List;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -11,6 +12,7 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 	
+	@Mapping(source = "actualUsername", target = "username")
 	UserDto toDto(User user);
 	
 	User toEntity(UserDtoIU userDtoIU);

@@ -26,7 +26,7 @@ public class UserDto {
 	private String profileImageUrl;
 
 	private LocalDateTime createdAt;
-
-	private boolean emailVerified = false;
+	
+	private boolean enabled;
 
 }

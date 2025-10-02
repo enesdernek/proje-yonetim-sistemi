@@ -1,6 +1,5 @@
 package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
 
-import java.util.List;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
@@ -18,6 +17,10 @@ public interface UserService {
 	public UserDto getAuthenticatedUserByUserId(Long userId);
 	
 	public UserDtoPagedResponse getAllUsersPagedByUserIdDesc(int pageNo, int pageSize);
+	
+	public void resendVerification(String email);
+	
+	public void verifyEmail(String email, int code);
 	
 
 

@@ -49,8 +49,8 @@ public class User implements UserDetails {
 	
 	private LocalDateTime createdAt;
 	
-	private boolean emailVerified = false;
-
+	private boolean enabled = false;
+	
 	@PrePersist
 	public void prePersist() {
 	    createdAt = LocalDateTime.now();
@@ -61,10 +61,6 @@ public class User implements UserDetails {
 	    return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 	}
 
-	@Override
-	public String getUsername() {
-	    return this.email;
-	}
 
 	@Override
 	public boolean isAccountNonExpired() {

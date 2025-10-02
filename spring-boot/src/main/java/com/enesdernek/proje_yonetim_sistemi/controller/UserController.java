@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
+import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -35,7 +36,7 @@ public class UserController {
 	@PostMapping("/register")
 	public ResponseEntity<SuccessDataResult<UserDto>> register(@RequestBody @Valid UserDtoIU userDtoIU) {
 		SuccessDataResult<UserDto> result = new SuccessDataResult<UserDto>(this.userService.register(userDtoIU),
-				"Kullanıcı başarıyla oluşturuldu.");
+				"Kullanıcı başarıyla oluşturuldu ve doğrulama maili gönderildi.");
 		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.CREATED);
 	}
 
@@ -56,13 +57,28 @@ public class UserController {
 				this.userService.getAuthenticatedUserByUserId(userId), "Giriş yapmış kullanıcı başarıyla getirildi.");
 		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/get-all-paged")
 	@PreAuthorize("hasAnyRole('ADMIN')")
-	public ResponseEntity<SuccessDataResult<UserDtoPagedResponse>> getAllUsersPagedByUserIdDesc(@RequestParam int pageNo,@RequestParam int pageSize){
+	public ResponseEntity<SuccessDataResult<UserDtoPagedResponse>> getAllUsersPagedByUserIdDesc(
+			@RequestParam int pageNo, @RequestParam int pageSize) {
 		SuccessDataResult<UserDtoPagedResponse> result = new SuccessDataResult<UserDtoPagedResponse>(
 				this.userService.getAllUsersPagedByUserIdDesc(pageNo, pageSize), "Kullanıcılar başarıyla getirildi.");
-		return new ResponseEntity<SuccessDataResult<UserDtoPagedResponse>>(result,HttpStatus.OK);
+		return new ResponseEntity<SuccessDataResult<UserDtoPagedResponse>>(result, HttpStatus.OK);
+	}
+
+	@PostMapping("/resend-email-verification")
+	public ResponseEntity<SuccessResult> resendVerification(@RequestParam String email) {
+		this.userService.resendVerification(email);
+		SuccessResult result = new SuccessResult("Email doğrulama maili tekrar gönderildi.");
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
+	}
+
+	@PostMapping("/verify-email")
+	public ResponseEntity<SuccessResult> verify(@RequestParam String email, @RequestParam int code) {
+		userService.verifyEmail(email, code);
+		SuccessResult result = new SuccessResult("Email doğrulandı.");
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
 
 }

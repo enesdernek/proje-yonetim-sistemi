@@ -15,6 +15,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
 
 	boolean existsByEmail(String email);
+	
+	boolean existsByUsername(String username);
 
 	@Query(value="SELECT * FROM users ORDER BY user_id DESC",nativeQuery=true)
 	List<User> getAllUsersPagedByUserIdDesc(Pageable pageable);

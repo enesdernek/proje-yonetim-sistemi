@@ -13,9 +13,12 @@ import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.ErrorDataResu
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.ErrorResult;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyConnectedException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyValidException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidCodeException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidConnectionException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 
 @RestControllerAdvice
@@ -32,6 +35,24 @@ public class GlobalExceptionHandler {
 	    ErrorDataResult<Map<String, String>> result = new ErrorDataResult<>(errors, "Doğrulama hatası oluştu");
 
 	    return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(InvalidCodeException.class)
+	public ResponseEntity<ErrorResult> handleInvalidCodeException(InvalidCodeException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+	}
+	
+	@ExceptionHandler(AlreadyValidException.class)
+	public ResponseEntity<ErrorResult> handleAlreadyValidException(AlreadyValidException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+	}
+	
+	@ExceptionHandler(TokenExpiredException.class)
+	public ResponseEntity<ErrorResult> handleTokenExpiredException(TokenExpiredException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
 	}
 	
 	@ExceptionHandler(InvalidConnectionException.class)

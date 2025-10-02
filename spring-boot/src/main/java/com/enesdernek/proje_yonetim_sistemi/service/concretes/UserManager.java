@@ -1,5 +1,8 @@
 package com.enesdernek.proje_yonetim_sistemi.service.concretes;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,59 +16,155 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.entity.EmailVerificationToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.Role;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
-import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyValidException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidCodeException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredException;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.JwtService;
 import com.enesdernek.proje_yonetim_sistemi.mapper.UserMapper;
+import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
+import com.enesdernek.proje_yonetim_sistemi.service.abstracts.EmailService;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.UserService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserManager implements UserService {
 
+	@Autowired
 	private UserRepository userRepository;
-	private BCryptPasswordEncoder passwordEncoder;
-	private AuthenticationProvider authenticationProvider;
-	private JwtService jwtService;
-	private UserMapper userMapper;
-	private Role role;
 
 	@Autowired
-	public UserManager(UserRepository userRepository,
-	                   BCryptPasswordEncoder passwordEncoder,
-	                   AuthenticationProvider authenticationProvider,
-	                   JwtService jwtService,
-	                   UserMapper userMapper) {  
-	    this.userRepository = userRepository;
-	    this.passwordEncoder = passwordEncoder;
-	    this.authenticationProvider = authenticationProvider;
-	    this.jwtService = jwtService;
-	    this.userMapper = userMapper;  
-	    this.role = Role.USER;  
-	}
+	private BCryptPasswordEncoder passwordEncoder;
+
+	@Autowired
+	private AuthenticationProvider authenticationProvider;
+
+	@Autowired
+	private JwtService jwtService;
+
+	@Autowired
+	private UserMapper userMapper;
+
+	@Autowired
+	private EmailVerificationTokenRepository emailVerificationTokenRepository;
+
+	@Autowired
+	private EmailService emailService;
 
 	@Override
+	@Transactional
 	public UserDto register(UserDtoIU userDtoIU) {
 
-		User user = userMapper.toEntity(userDtoIU);
-
-		if (userRepository.existsByEmail(user.getEmail()) == true) {
-			throw new EmailAlreadyExistsException("Bu email ile zaten bir hesap oluşturulmuş");
+		Optional<User> existingUserOpt = userRepository.findByEmail(userDtoIU.getEmail());
+		
+		boolean isExistsByUsername = this.userRepository.existsByUsername(userDtoIU.getUsername());
+		
+		if(isExistsByUsername) {
+			throw new AlreadyExistsException("Bu kullanıcı adına sahip bir kullanıcı zaten var.");
 		}
 
-		user.setPassword(passwordEncoder.encode(userDtoIU.getPassword()));
+		if (existingUserOpt.isPresent()) {
+			User existingUser = existingUserOpt.get();
 
-		user.setRole(role.USER);
+			if (existingUser.isEnabled()) {
+				throw new AlreadyExistsException("Bu email ile zaten aktif bir hesap var");
+			} else {
+				emailVerificationTokenRepository.deleteByUser(existingUser);
+
+				int verificationCode = (int) (Math.random() * 900000) + 100000;
+
+				EmailVerificationToken token = new EmailVerificationToken();
+				token.setUser(existingUser);
+				token.setCode(verificationCode);
+				token.setExpiryDate(LocalDateTime.now().plusHours(1));
+
+				this.emailVerificationTokenRepository.save(token);
+
+				emailService.sendRegisterVerificationCode(existingUser.getEmail(), verificationCode);
+
+				return userMapper.toDto(existingUser);
+			}
+		}
+		
+		User user = userMapper.toEntity(userDtoIU);
+		user.setPassword(passwordEncoder.encode(userDtoIU.getPassword()));
+		user.setRole(Role.USER);
+		user.setEnabled(false);
 
 		User savedUser = userRepository.save(user);
+
+		int verificationCode = (int) (Math.random() * 900000) + 100000;
+
+		EmailVerificationToken token = new EmailVerificationToken();
+		token.setUser(savedUser);
+		token.setCode(verificationCode);
+		token.setExpiryDate(LocalDateTime.now().plusHours(1));
+
+		this.emailVerificationTokenRepository.save(token);
+
+		emailService.sendRegisterVerificationCode(savedUser.getEmail(), verificationCode);
 
 		return userMapper.toDto(savedUser);
 
 	}
 	
-    @Override
+	@Override
+	@Transactional
+	public void verifyEmail(String email, int code) {
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+	    if (user.isEnabled()) {
+	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
+	    }
+
+	    EmailVerificationToken token = emailVerificationTokenRepository
+	            .findByUserAndCode(user, code)
+	            .orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
+
+	    if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+	        throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
+	    }
+
+	    user.setEnabled(true);
+	    userRepository.save(user);
+
+	    emailVerificationTokenRepository.delete(token);
+	}
+	
+	@Override
+	@Transactional
+	public void resendVerification(String email) {
+		
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+	    if (user.isEnabled()) {
+	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış.");
+	    }
+
+	    emailVerificationTokenRepository.deleteByUser(user);
+
+	    int verificationCode = (int)(Math.random() * 900000) + 100000;
+
+	    EmailVerificationToken token = new EmailVerificationToken();
+	    token.setUser(user);
+	    token.setCode(verificationCode);
+	    token.setExpiryDate(LocalDateTime.now().plusHours(1));
+
+	    emailVerificationTokenRepository.save(token);
+
+	    this.emailService.sendRegisterVerificationCode(user.getEmail(), verificationCode);
+	}
+
+	@Override
 	public AuthResponse authenticate(UserDtoAuthIU userDtoAuthIU) {
 
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDtoAuthIU.getEmail(),
@@ -85,17 +184,18 @@ public class UserManager implements UserService {
 
 	@Override
 	public UserDto getAuthenticatedUserByUserId(Long userId) {
-		User user = this.userRepository.findById(userId).orElseThrow(()->new UsernameNotFoundException("Kullanıcı bulunamadı."));
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı."));
 		UserDto userDto = userMapper.toDto(user);
 		return userDto;
 	}
 
 	@Override
 	public UserDtoPagedResponse getAllUsersPagedByUserIdDesc(int pageNo, int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 		List<User> users = this.userRepository.getAllUsersPagedByUserIdDesc(pageable);
 		Long totalElements = this.userRepository.count();
-	    int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+		int totalPages = (int) Math.ceil((double) totalElements / pageSize);
 		List<UserDto> userDtos = this.userMapper.toDtoList(users);
 		UserDtoPagedResponse response = new UserDtoPagedResponse();
 		response.setTotalPages(totalPages);

@@ -10,6 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.enesdernek.proje_yonetim_sistemi.entity.User;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 
 
@@ -29,8 +32,14 @@ public class AppConfig {
 	    return new UserDetailsService() {
 	        @Override
 	        public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-	            return userRepository.findByEmail(email)
-	                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+	        	User user = userRepository.findByEmail(email)
+		                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+	            
+	            if (!user.isEnabled()) {
+	                throw new UnauthorizedActionException("Email doğrulanmamış kullanıcı: " + email);
+	            }
+	            
+	            return user;
 	        }
 	    }; 
 	}

@@ -25,7 +25,9 @@ public class SecurityConfig {
 		    "/v3/api-docs/**",
 		    "/swagger-ui/**",
 		    "/swagger-ui.html",
-		    "/api/connections/get-connections-paged"
+		    "/api/connections/get-connections-paged",
+             "/api/users/verify-email",	
+		    "/api/users/resend-email-verification"
 		};
 
     @Autowired
