@@ -10,5 +10,11 @@ public interface ConnectionRequestService {
 	public ConnectionRequestDtoPagedResponse getAllUsersSendedConnectionRequestsPaged(Long userId,int pageNo,int pageSize);
 	
 	public ConnectionRequestDtoPagedResponse getAllUsersReceivedConnectionRequestsPaged(Long userId,int pageNo,int pageSize);
+	
+	public ConnectionRequestDto acceptRequest(Long userId,Long requestId);
+	
+	public ConnectionRequestDto rejectRequest(Long userId,Long requestId);
+	
+	public void deleteRequest(Long userId,Long requestId);
 
 }

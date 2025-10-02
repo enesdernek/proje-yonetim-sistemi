@@ -1,6 +1,5 @@
 package com.enesdernek.proje_yonetim_sistemi.exception;
 
-import java.nio.channels.AlreadyConnectedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,9 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.ErrorDataResult;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.ErrorResult;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyConnectedException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidConnectionException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,10 +34,22 @@ public class GlobalExceptionHandler {
 	    return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 	}
 	
+	@ExceptionHandler(InvalidConnectionException.class)
+	public ResponseEntity<ErrorResult> handleInvalidConnectionException(InvalidConnectionException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+	}
+	
+	@ExceptionHandler(UnauthorizedActionException.class)
+	public ResponseEntity<ErrorResult> handleUnauthorizedActionException(UnauthorizedActionException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+	}
+	
 	@ExceptionHandler(AlreadyConnectedException.class)
 	public ResponseEntity<ErrorResult> handleAlreadyConnectedException(AlreadyConnectedException ex) {
 	    ErrorResult error = new ErrorResult(ex.getMessage());
-	    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+	    return new ResponseEntity<>(error, HttpStatus.CONFLICT);
 	}
 	
 	@ExceptionHandler(AlreadyExistsException.class)
