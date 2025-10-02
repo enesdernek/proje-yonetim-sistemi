@@ -12,6 +12,14 @@ public class ConnectionDto {
 	private Long connectionId;
 
 	private Long userId;
+	
+	private String username;
+	
+	private String usersProfileImageUrl;
+	
+	private String connectedUsername;
+	
+	private String connectedUsersProfileImageUrl;
 
 	private Long connectedUserId;
 
