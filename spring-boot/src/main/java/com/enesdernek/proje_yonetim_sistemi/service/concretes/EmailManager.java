@@ -23,5 +23,16 @@ public class EmailManager implements EmailService {
 		message.setText("Doğrulama kodunuz: " + verificationCode);
 		mailSender.send(message);
 	}
+	
+	@Override
+    public void sendResetPasswordCode(String email,int code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Şifre Sıfırlama İsteği");
+        message.setText(
+                "Şifre sıfırlama kodunuz: " + code +
+                "\nBu kod 5 dakika geçerlidir.");
+        mailSender.send(message);
+    }
 
 }

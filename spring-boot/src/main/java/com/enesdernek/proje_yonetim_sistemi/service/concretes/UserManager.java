@@ -14,11 +14,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
+import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.EmailVerificationToken;
+import com.enesdernek.proje_yonetim_sistemi.entity.PasswordResetToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.Role;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
@@ -32,6 +34,7 @@ import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.JwtService;
 import com.enesdernek.proje_yonetim_sistemi.mapper.UserMapper;
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.PasswordResetTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.EmailService;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.UserService;
@@ -58,6 +61,9 @@ public class UserManager implements UserService {
 
 	@Autowired
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
+	
+	@Autowired
+	private PasswordResetTokenRepository passwordResetTokenRepository;
 
 	@Autowired
 	private EmailService emailService;
@@ -67,10 +73,10 @@ public class UserManager implements UserService {
 	public UserDto register(UserDtoIU userDtoIU) {
 
 		Optional<User> existingUserOpt = userRepository.findByEmail(userDtoIU.getEmail());
-		
+
 		boolean isExistsByUsername = this.userRepository.existsByUsername(userDtoIU.getUsername());
-		
-		if(isExistsByUsername) {
+
+		if (isExistsByUsername) {
 			throw new AlreadyExistsException("Bu kullanıcı adına sahip bir kullanıcı zaten var.");
 		}
 
@@ -96,7 +102,7 @@ public class UserManager implements UserService {
 				return userMapper.toDto(existingUser);
 			}
 		}
-		
+
 		User user = userMapper.toEntity(userDtoIU);
 		user.setPassword(passwordEncoder.encode(userDtoIU.getPassword()));
 		user.setRole(Role.USER);
@@ -118,54 +124,51 @@ public class UserManager implements UserService {
 		return userMapper.toDto(savedUser);
 
 	}
-	
+
 	@Override
 	@Transactional
 	public void verifyEmail(String email, int code) {
-	    User user = userRepository.findByEmail(email)
-	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-	    if (user.isEnabled()) {
-	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
-	    }
+		if (user.isEnabled()) {
+			throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
+		}
 
-	    EmailVerificationToken token = emailVerificationTokenRepository
-	            .findByUserAndCode(user, code)
-	            .orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
+		EmailVerificationToken token = emailVerificationTokenRepository.findByUserAndCode(user, code)
+				.orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
 
-	    if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-	        throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
-	    }
+		if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+			throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
+		}
 
-	    user.setEnabled(true);
-	    userRepository.save(user);
+		user.setEnabled(true);
+		userRepository.save(user);
 
-	    emailVerificationTokenRepository.delete(token);
+		emailVerificationTokenRepository.delete(token);
 	}
-	
+
 	@Override
 	@Transactional
 	public void resendVerification(String email) {
-		
-	    User user = userRepository.findByEmail(email)
-	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-	    if (user.isEnabled()) {
-	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış.");
-	    }
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-	    emailVerificationTokenRepository.deleteByUser(user);
+		if (user.isEnabled()) {
+			throw new AlreadyValidException("Bu hesap zaten doğrulanmış.");
+		}
 
-	    int verificationCode = (int)(Math.random() * 900000) + 100000;
+		emailVerificationTokenRepository.deleteByUser(user);
 
-	    EmailVerificationToken token = new EmailVerificationToken();
-	    token.setUser(user);
-	    token.setCode(verificationCode);
-	    token.setExpiryDate(LocalDateTime.now().plusHours(1));
+		int verificationCode = (int) (Math.random() * 900000) + 100000;
 
-	    emailVerificationTokenRepository.save(token);
+		EmailVerificationToken token = new EmailVerificationToken();
+		token.setUser(user);
+		token.setCode(verificationCode);
+		token.setExpiryDate(LocalDateTime.now().plusMinutes(5));
 
-	    this.emailService.sendRegisterVerificationCode(user.getEmail(), verificationCode);
+		emailVerificationTokenRepository.save(token);
+
+		this.emailService.sendRegisterVerificationCode(user.getEmail(), verificationCode);
 	}
 
 	@Override
@@ -210,18 +213,62 @@ public class UserManager implements UserService {
 
 	@Override
 	public void changePassword(Long userId, PasswordChangeRequest request) {
-		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
-		
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
 		if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new FalsePasswordException("Mevcut şifre yanlış.");
-        }
-		
-		if(passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-		   throw new InvalidPasswordException("Yeni şifre eski şifre ile aynı olamaz.");
+			throw new FalsePasswordException("Mevcut şifre yanlış.");
 		}
-		
+
+		if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+			throw new InvalidPasswordException("Yeni şifre eski şifre ile aynı olamaz.");
+		}
+
 		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 		userRepository.save(user);
+
+	}
+
+	@Override
+	@Transactional
+	public void sendResetPasswordEmail(String email) {
+		 
+		User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+        passwordResetTokenRepository.deleteByUser(user);
+
+        int code = (int) (100000 + Math.random() * 900000);
+
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+
+        PasswordResetToken token = new PasswordResetToken();
+        token.setCode(code);
+        token.setUser(user);
+        token.setExpiryDate(expiry);
+        passwordResetTokenRepository.save(token);
+
+
+        emailService.sendResetPasswordCode(user.getEmail(),code);
+	}
+
+	@Override
+    @Transactional
+	public void resetPassword(PasswordResetRequest request, int code) {
+		 User user = userRepository.findByEmail(request.getEmail())
+	                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+	        PasswordResetToken token = passwordResetTokenRepository.findByUserAndCode(user, code)
+	                .orElseThrow(() -> new InvalidCodeException("Kod hatalı!"));
+
+	        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+	            throw new TokenExpiredException("Kodun süresi dolmuş!");
+	        }
+
+	        user.setPassword(passwordEncoder.encode(request.getNewPassword())); 
+	        userRepository.save(user);
+
+	        passwordResetTokenRepository.delete(token);
 		
 	}
 

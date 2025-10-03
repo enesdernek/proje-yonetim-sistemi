@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
+import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
@@ -48,6 +49,20 @@ public class UserController {
 		SuccessDataResult<AuthResponse> result = new SuccessDataResult<AuthResponse>(
 				this.userService.authenticate(userDtoAuthIU), "Kullanıcı başarıyla giriş yaptı.");
 		return new ResponseEntity<SuccessDataResult<AuthResponse>>(result, HttpStatus.OK);
+	}
+	
+	@PostMapping("/send-reset-password-email")
+	public ResponseEntity<SuccessResult> sendResetPasswordEmail(@RequestParam String email){
+		this.userService.sendResetPasswordEmail(email);
+		SuccessResult result = new SuccessResult("Şifre sıfırlama emaili başarıyla gönderildi.");
+		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+	}
+	
+	@PutMapping("/reset-password")
+	public ResponseEntity<SuccessResult> resetPassword(@RequestBody PasswordResetRequest request,@RequestParam int code){
+		this.userService.resetPassword(request, code);
+		SuccessResult result = new SuccessResult("Şifre başarıyla sıfırlandı.");
+		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
 	}
 
 	@PutMapping("/change-password")
