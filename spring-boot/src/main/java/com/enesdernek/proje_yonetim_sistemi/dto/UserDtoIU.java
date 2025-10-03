@@ -42,7 +42,5 @@ public class UserDtoIU {
     @Size(min = 2, max = 512)
     private String address;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-
 
 }

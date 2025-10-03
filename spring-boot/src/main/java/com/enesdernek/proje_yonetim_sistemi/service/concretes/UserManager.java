@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -100,18 +107,7 @@ public class UserManager implements UserService {
 			if (existingUser.isEnabled()) {
 				throw new AlreadyExistsException("Bu email ile zaten aktif bir hesap var");
 			} else {
-				emailVerificationTokenRepository.deleteByUser(existingUser);
-
-				int verificationCode = (int) (Math.random() * 900000) + 100000;
-
-				EmailVerificationToken token = new EmailVerificationToken();
-				token.setUser(existingUser);
-				token.setCode(verificationCode);
-				token.setExpiryDate(LocalDateTime.now().plusHours(1));
-
-				this.emailVerificationTokenRepository.save(token);
-
-				emailService.sendRegisterVerificationCode(existingUser.getEmail(), verificationCode);
+				sendRegisterVerificationEmail(existingUser);
 
 				return userMapper.toDto(existingUser);
 			}
@@ -121,44 +117,52 @@ public class UserManager implements UserService {
 		user.setPassword(passwordEncoder.encode(userDtoIU.getPassword()));
 		user.setRole(Role.USER);
 		user.setEnabled(false);
+		
 
 		User savedUser = userRepository.save(user);
-
-		int verificationCode = (int) (Math.random() * 900000) + 100000;
-
-		EmailVerificationToken token = new EmailVerificationToken();
-		token.setUser(savedUser);
-		token.setCode(verificationCode);
-		token.setExpiryDate(LocalDateTime.now().plusHours(1));
-
-		this.emailVerificationTokenRepository.save(token);
-
-		emailService.sendRegisterVerificationCode(savedUser.getEmail(), verificationCode);
+		
+		sendRegisterVerificationEmail(user);
 
 		return userMapper.toDto(savedUser);
 
 	}
+	
+	public void sendRegisterVerificationEmail(User existingUser) {
+		emailVerificationTokenRepository.deleteByUser(existingUser);
 
+		String token = UUID.randomUUID().toString();
+		LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+
+		EmailVerificationToken verificationToken = new EmailVerificationToken();
+		verificationToken.setUser(existingUser);
+		verificationToken.setToken(token);
+		verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(15));
+
+		this.emailVerificationTokenRepository.save(verificationToken);
+
+		emailService.sendRegisterVerificationEmail(existingUser.getEmail(), token);
+	}
+	
 	@Override
 	@Transactional
-	public void verifyEmail(String email, int code) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+	public void verifyEmail(String token) {
+	    EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
+	            .orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
 
-		if (user.isEnabled()) {
-			throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
-		}
+	    if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+	        throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
+	    }
 
-		EmailVerificationToken token = emailVerificationTokenRepository.findByUserAndCode(user, code)
-				.orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
+	    User user = verificationToken.getUser();
 
-		if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-			throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
-		}
+	    if (user.isEnabled()) {
+	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
+	    }
 
-		user.setEnabled(true);
-		userRepository.save(user);
+	    user.setEnabled(true);
+	    userRepository.save(user);
 
-		emailVerificationTokenRepository.delete(token);
+	    emailVerificationTokenRepository.delete(verificationToken);
 	}
 
 	@Override
@@ -171,18 +175,7 @@ public class UserManager implements UserService {
 			throw new AlreadyValidException("Bu hesap zaten doğrulanmış.");
 		}
 
-		emailVerificationTokenRepository.deleteByUser(user);
-
-		int verificationCode = (int) (Math.random() * 900000) + 100000;
-
-		EmailVerificationToken token = new EmailVerificationToken();
-		token.setUser(user);
-		token.setCode(verificationCode);
-		token.setExpiryDate(LocalDateTime.now().plusMinutes(5));
-
-		emailVerificationTokenRepository.save(token);
-
-		this.emailService.sendRegisterVerificationCode(user.getEmail(), verificationCode);
+		sendRegisterVerificationEmail(user);
 	}
 
 	@Override
@@ -251,36 +244,34 @@ public class UserManager implements UserService {
 
 		passwordResetTokenRepository.deleteByUser(user);
 
-		int code = (int) (100000 + Math.random() * 900000);
+		String token = UUID.randomUUID().toString();
+		LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
 
-		LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+		PasswordResetToken resetToken = new PasswordResetToken();
+		resetToken.setToken(token);
+		resetToken.setUser(user);
+		resetToken.setExpiryDate(expiryDate);
+		passwordResetTokenRepository.save(resetToken);
 
-		PasswordResetToken token = new PasswordResetToken();
-		token.setCode(code);
-		token.setUser(user);
-		token.setExpiryDate(expiry);
-		passwordResetTokenRepository.save(token);
-
-		emailService.sendResetPasswordCode(user.getEmail(), code);
+		emailService.sendResetPasswordEmail(resetToken.getUser().getEmail(),token);
 	}
 
 	@Override
 	@Transactional
-	public void resetPassword(PasswordResetRequest request, int code) {
-		User user = userRepository.findByEmail(request.getEmail())
-				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+	public void resetPassword(PasswordResetRequest request, String token) {
+		
+		PasswordResetToken passwordResetToken = this.passwordResetTokenRepository.findByToken(token).orElseThrow(()->new NotFoundException("Token bulunamadı"));
+		
+		User user = passwordResetToken.getUser();
 
-		PasswordResetToken token = passwordResetTokenRepository.findByUserAndCode(user, code)
-				.orElseThrow(() -> new InvalidCodeException("Kod hatalı!"));
-
-		if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+		if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
 			throw new TokenExpiredException("Kodun süresi dolmuş!");
 		}
 
 		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 		userRepository.save(user);
 
-		passwordResetTokenRepository.delete(token);
+		passwordResetTokenRepository.delete(passwordResetToken);
 
 	}
 
@@ -313,22 +304,26 @@ public class UserManager implements UserService {
 		emailService.sendChangeEmailVerification(newEmail, user.getUsername(), token);
 	}
 
-	@Override
 	@Transactional
-	public void changeEmail(String token) {
-		EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
-				.orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
+	public void changeEmail(String token, HttpServletRequest request, HttpServletResponse response) {
+	    EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
+	            .orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
 
-		if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-			throw new TokenExpiredException("Token süresi dolmuş!");
-		}
+	    if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+	        throw new TokenExpiredException("Token süresi dolmuş!");
+	    }
 
-		User user = emailChangeToken.getUser();
-		user.setEmail(emailChangeToken.getNewEmail());
-		userRepository.save(user);
+	    User user = emailChangeToken.getUser();
+	    user.setEmail(emailChangeToken.getNewEmail());
+	    userRepository.save(user);
 
-		emailChangeTokenRepository.delete(emailChangeToken);
+	    emailChangeTokenRepository.delete(emailChangeToken);
 
+	    SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    if (auth != null) {
+	        logoutHandler.logout(request, response, auth);
+	    }
 	}
 
 	@Override

@@ -9,7 +9,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +28,8 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -52,49 +53,54 @@ public class UserController {
 				this.userService.authenticate(userDtoAuthIU), "Kullanıcı başarıyla giriş yaptı.");
 		return new ResponseEntity<SuccessDataResult<AuthResponse>>(result, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/send-change-email-adress-email")
-    @PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessResult> sendChangeEmailAdressEmail(@RequestParam String newEmail,@RequestParam String currentPassword,Authentication authentication){
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessResult> sendChangeEmailAdressEmail(@RequestParam String newEmail,
+			@RequestParam String currentPassword, Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 		Long userId = user.getUserId();
-		
+
 		this.userService.sendChangeEmailAdressEmail(userId, newEmail, currentPassword);
 		SuccessResult result = new SuccessResult("Email adresi değiştirme emaili başarıyla gönderildi.");
-		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/change-email")
-	public ResponseEntity<SuccessResult> changeEmail(String token){
-		this.userService.changeEmail(token);
-		SuccessResult result = new SuccessResult("Email adresi başarıyla değiştirildi.");
-		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+	public ResponseEntity<SuccessResult> changeEmail(@RequestParam("token") String token, HttpServletRequest request,
+			HttpServletResponse response) {
+		this.userService.changeEmail(token, request, response);
+
+		SuccessResult result = new SuccessResult("Email adresi başarıyla değiştirildi ve oturum kapatıldı.");
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/send-reset-password-email")
-	public ResponseEntity<SuccessResult> sendResetPasswordEmail(@RequestParam String email){
+	public ResponseEntity<SuccessResult> sendResetPasswordEmail(@RequestParam String email) {
 		this.userService.sendResetPasswordEmail(email);
 		SuccessResult result = new SuccessResult("Şifre sıfırlama emaili başarıyla gönderildi.");
-		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/reset-password")
-	public ResponseEntity<SuccessResult> resetPassword(@RequestBody PasswordResetRequest request,@RequestParam int code){
-		this.userService.resetPassword(request, code);
+	public ResponseEntity<SuccessResult> resetPassword(@RequestBody PasswordResetRequest request,
+			@RequestParam String token) {
+		this.userService.resetPassword(request, token);
 		SuccessResult result = new SuccessResult("Şifre başarıyla sıfırlandı.");
-		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
 
 	@PutMapping("/change-password")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessResult> changePassword(@RequestBody @Valid PasswordChangeRequest request, Authentication authentication) {
-            User user = (User)authentication.getPrincipal();
-            Long userId = user.getUserId();
-            
-            this.userService.changePassword(userId, request);
-            SuccessResult result = new SuccessResult("Şifre başarıyla değiştirildi.");
-            
-            return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+	public ResponseEntity<SuccessResult> changePassword(@RequestBody @Valid PasswordChangeRequest request,
+			Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
+
+		this.userService.changePassword(userId, request);
+		SuccessResult result = new SuccessResult("Şifre başarıyla değiştirildi.");
+
+		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
 
 	@GetMapping("/me")
@@ -124,12 +130,12 @@ public class UserController {
 	}
 
 	@PostMapping("/verify-email")
-	public ResponseEntity<SuccessResult> verify(@RequestParam String email, @RequestParam int code) {
-		userService.verifyEmail(email, code);
+	public ResponseEntity<SuccessResult> verify(@RequestParam String token) {
+		userService.verifyEmail(token);
 		SuccessResult result = new SuccessResult("Email doğrulandı.");
 		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
 	}
-	
+
 	@DeleteMapping("/delete-by-user-id")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<SuccessResult> deleteByUserId(@RequestParam Long userId) {

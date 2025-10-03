@@ -2,9 +2,9 @@ package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
 
 public interface EmailService {
 
-	void sendRegisterVerificationCode(String email, int verificationCode);
+	void sendRegisterVerificationEmail(String email, String token);
 
-	void sendResetPasswordCode(String email, int code);
+	void sendResetPasswordEmail(String email, String token);
 
 	void sendChangeEmailVerification(String newEmail, String name, String token);
 }

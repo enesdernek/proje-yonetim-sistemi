@@ -11,7 +11,7 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
 	
-	Optional<PasswordResetToken> findByUserAndCode(User user, Integer code);
+	Optional<PasswordResetToken> findByToken(String token);
 
 	void deleteByUser(User user);
 }

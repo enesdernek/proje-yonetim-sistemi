@@ -24,7 +24,8 @@ public class EmailVerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emailVerificationTokenId;
 
-    private Integer code; 
+    private String token;
+    
     private LocalDateTime expiryDate; 
 
     @ManyToOne

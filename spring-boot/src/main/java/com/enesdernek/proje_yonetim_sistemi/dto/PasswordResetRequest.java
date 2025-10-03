@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PasswordResetRequest {
 	
-	private String email;
-
 	@NotNull
 	@NotBlank
 	@Size(min = 8, max = 128)

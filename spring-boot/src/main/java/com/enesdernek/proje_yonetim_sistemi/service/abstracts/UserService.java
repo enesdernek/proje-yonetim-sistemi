@@ -9,6 +9,9 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 
 public interface UserService {
 	
@@ -20,21 +23,24 @@ public interface UserService {
 	
 	public UserDtoPagedResponse getAllUsersPagedByUserIdDesc(int pageNo, int pageSize);
 	
+	public void deleteByUserId(Long userId);
+	
+	
 	public void resendVerification(String email);
 	
-	public void verifyEmail(String email, int code);
+	public void verifyEmail(String token);
 	
 	public void changePassword(Long userId, PasswordChangeRequest request);
 	
 	public void sendResetPasswordEmail(String email);
 
-	public void resetPassword(PasswordResetRequest request, int code);
+	public void resetPassword(PasswordResetRequest request, String token);
 	
 	public void sendChangeEmailAdressEmail(Long userId,String newEmail, String currentPassword);
 	
-	public void changeEmail(String token);
+	public void changeEmail(String token, HttpServletRequest request, HttpServletResponse response);
 	
-	public void deleteByUserId(Long userId);
+	
 	
 
 }

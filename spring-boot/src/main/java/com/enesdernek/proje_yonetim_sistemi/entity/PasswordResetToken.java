@@ -25,7 +25,7 @@ public class PasswordResetToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long passwordResetTokenId;
 
-    Integer code;
+    private String token;
 
     @Column(nullable = false)
     private LocalDateTime expiryDate;
