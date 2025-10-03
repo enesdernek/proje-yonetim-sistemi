@@ -29,7 +29,8 @@ public class SecurityConfig {
              "/api/users/verify-email",	
 		    "/api/users/resend-email-verification",
 		    "/api/users/send-reset-password-email",
-		    "/api/users/reset-password"
+		    "/api/users/reset-password",
+		    "/api/users/change-email"
 		};
 
     @Autowired

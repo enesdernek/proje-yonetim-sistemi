@@ -29,5 +29,11 @@ public interface UserService {
 	public void sendResetPasswordEmail(String email);
 
 	public void resetPassword(PasswordResetRequest request, int code);
+	
+	public void sendChangeEmailAdressEmail(Long userId,String newEmail, String currentPassword);
+	
+	public void changeEmail(String token);
+	
+	
 
 }

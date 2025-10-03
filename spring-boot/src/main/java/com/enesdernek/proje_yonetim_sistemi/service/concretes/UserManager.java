@@ -3,6 +3,7 @@ package com.enesdernek.proje_yonetim_sistemi.service.concretes;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.entity.EmailChangeToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.EmailVerificationToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.PasswordResetToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.Role;
@@ -33,6 +35,7 @@ import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredExc
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.JwtService;
 import com.enesdernek.proje_yonetim_sistemi.mapper.UserMapper;
+import com.enesdernek.proje_yonetim_sistemi.repository.EmailChangeTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.PasswordResetTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
@@ -64,6 +67,9 @@ public class UserManager implements UserService {
 	
 	@Autowired
 	private PasswordResetTokenRepository passwordResetTokenRepository;
+	
+	@Autowired
+	private EmailChangeTokenRepository emailChangeTokenRepository;
 
 	@Autowired
 	private EmailService emailService;
@@ -271,5 +277,54 @@ public class UserManager implements UserService {
 	        passwordResetTokenRepository.delete(token);
 		
 	}
+	
+	@Override
+    @Transactional
+    public void sendChangeEmailAdressEmail(Long userId, String newEmail, String currentPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+        
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new FalsePasswordException("Mevcut şifre hatalı!");
+        }
+        
+        if(userRepository.existsByEmail(newEmail)) {
+            throw new AlreadyExistsException("Bu email zaten kullanılıyor!");
+        }
+
+        emailChangeTokenRepository.deleteByUser(user);
+        
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+
+        EmailChangeToken emailChangeToken = new EmailChangeToken();
+        emailChangeToken.setUser(user);
+        emailChangeToken.setNewEmail(newEmail);
+        emailChangeToken.setToken(token);
+        emailChangeToken.setExpiryDate(expiryDate);
+
+        emailChangeTokenRepository.save(emailChangeToken);
+
+
+        emailService.sendChangeEmailVerification(newEmail,user.getUsername(),token);
+    }
+
+    @Override
+    @Transactional
+    public void changeEmail(String token) {
+        EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
+                .orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
+
+        if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new TokenExpiredException("Token süresi dolmuş!");
+        }
+
+        User user = emailChangeToken.getUser();
+        user.setEmail(emailChangeToken.getNewEmail());
+        userRepository.save(user);
+
+        emailChangeTokenRepository.delete(emailChangeToken);
+
+    }
 
 }

@@ -51,6 +51,24 @@ public class UserController {
 		return new ResponseEntity<SuccessDataResult<AuthResponse>>(result, HttpStatus.OK);
 	}
 	
+	@PostMapping("/send-change-email-adress-email")
+    @PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessResult> sendChangeEmailAdressEmail(@RequestParam String newEmail,@RequestParam String currentPassword,Authentication authentication){
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
+		
+		this.userService.sendChangeEmailAdressEmail(userId, newEmail, currentPassword);
+		SuccessResult result = new SuccessResult("Email adresi değiştirme emaili başarıyla gönderildi.");
+		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+	}
+	
+	@PutMapping("/change-email")
+	public ResponseEntity<SuccessResult> changeEmail(String token){
+		this.userService.changeEmail(token);
+		SuccessResult result = new SuccessResult("Email adresi başarıyla değiştirildi.");
+		return new ResponseEntity<SuccessResult>(result,HttpStatus.OK);
+	}
+	
 	@PostMapping("/send-reset-password-email")
 	public ResponseEntity<SuccessResult> sendResetPasswordEmail(@RequestParam String email){
 		this.userService.sendResetPasswordEmail(email);
