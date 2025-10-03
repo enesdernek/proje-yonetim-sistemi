@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.enesdernek.proje_yonetim_sistemi.entity.ConnectionRequest;
 import com.enesdernek.proje_yonetim_sistemi.entity.ConnectionRequestStatus;
 
+import jakarta.transaction.Transactional;
+
 @Repository
 public interface ConnectionRequestRepository extends JpaRepository<ConnectionRequest, Long>{
 	
@@ -20,5 +22,8 @@ public interface ConnectionRequestRepository extends JpaRepository<ConnectionReq
     
     @Query(value="SELECT * FROM connection_requests WHERE receiver_id = :userId ORDER BY request_id DESC",nativeQuery=true)
     List<ConnectionRequest>getAllUsersReceivedConnectionRequestsPagedByRequestIdDesc(Long userId,Pageable pageable);
+    
+    @Transactional
+    void deleteBySenderIdOrReceiverId(Long senderId, Long receiverId);
 
 }

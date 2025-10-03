@@ -20,5 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	@Query(value="SELECT * FROM users ORDER BY user_id DESC",nativeQuery=true)
 	List<User> getAllUsersPagedByUserIdDesc(Pageable pageable);
+	
+	void deleteByUserId(Long userId);
 
 }

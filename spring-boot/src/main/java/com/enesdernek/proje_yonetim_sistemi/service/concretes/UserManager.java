@@ -35,6 +35,8 @@ import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.TokenExpiredExc
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.JwtService;
 import com.enesdernek.proje_yonetim_sistemi.mapper.UserMapper;
+import com.enesdernek.proje_yonetim_sistemi.repository.ConnectionRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.ConnectionRequestRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailChangeTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.PasswordResetTokenRepository;
@@ -64,15 +66,21 @@ public class UserManager implements UserService {
 
 	@Autowired
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
-	
+
 	@Autowired
 	private PasswordResetTokenRepository passwordResetTokenRepository;
-	
+
 	@Autowired
 	private EmailChangeTokenRepository emailChangeTokenRepository;
 
 	@Autowired
 	private EmailService emailService;
+
+	@Autowired
+	private ConnectionRepository connectionRepository;
+
+	@Autowired
+	private ConnectionRequestRepository connectionRequestRepository;
 
 	@Override
 	@Transactional
@@ -238,93 +246,102 @@ public class UserManager implements UserService {
 	@Override
 	@Transactional
 	public void sendResetPasswordEmail(String email) {
-		 
-		User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-        passwordResetTokenRepository.deleteByUser(user);
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-        int code = (int) (100000 + Math.random() * 900000);
+		passwordResetTokenRepository.deleteByUser(user);
 
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+		int code = (int) (100000 + Math.random() * 900000);
 
-        PasswordResetToken token = new PasswordResetToken();
-        token.setCode(code);
-        token.setUser(user);
-        token.setExpiryDate(expiry);
-        passwordResetTokenRepository.save(token);
+		LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
 
+		PasswordResetToken token = new PasswordResetToken();
+		token.setCode(code);
+		token.setUser(user);
+		token.setExpiryDate(expiry);
+		passwordResetTokenRepository.save(token);
 
-        emailService.sendResetPasswordCode(user.getEmail(),code);
+		emailService.sendResetPasswordCode(user.getEmail(), code);
 	}
 
 	@Override
-    @Transactional
+	@Transactional
 	public void resetPassword(PasswordResetRequest request, int code) {
-		 User user = userRepository.findByEmail(request.getEmail())
-	                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+		User user = userRepository.findByEmail(request.getEmail())
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-	        PasswordResetToken token = passwordResetTokenRepository.findByUserAndCode(user, code)
-	                .orElseThrow(() -> new InvalidCodeException("Kod hatalı!"));
+		PasswordResetToken token = passwordResetTokenRepository.findByUserAndCode(user, code)
+				.orElseThrow(() -> new InvalidCodeException("Kod hatalı!"));
 
-	        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-	            throw new TokenExpiredException("Kodun süresi dolmuş!");
-	        }
+		if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+			throw new TokenExpiredException("Kodun süresi dolmuş!");
+		}
 
-	        user.setPassword(passwordEncoder.encode(request.getNewPassword())); 
-	        userRepository.save(user);
+		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+		userRepository.save(user);
 
-	        passwordResetTokenRepository.delete(token);
-		
+		passwordResetTokenRepository.delete(token);
+
 	}
-	
+
 	@Override
-    @Transactional
-    public void sendChangeEmailAdressEmail(Long userId, String newEmail, String currentPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-        
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new FalsePasswordException("Mevcut şifre hatalı!");
-        }
-        
-        if(userRepository.existsByEmail(newEmail)) {
-            throw new AlreadyExistsException("Bu email zaten kullanılıyor!");
-        }
+	@Transactional
+	public void sendChangeEmailAdressEmail(Long userId, String newEmail, String currentPassword) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-        emailChangeTokenRepository.deleteByUser(user);
-        
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+		if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+			throw new FalsePasswordException("Mevcut şifre hatalı!");
+		}
 
-        EmailChangeToken emailChangeToken = new EmailChangeToken();
-        emailChangeToken.setUser(user);
-        emailChangeToken.setNewEmail(newEmail);
-        emailChangeToken.setToken(token);
-        emailChangeToken.setExpiryDate(expiryDate);
+		if (userRepository.existsByEmail(newEmail)) {
+			throw new AlreadyExistsException("Bu email zaten kullanılıyor!");
+		}
 
-        emailChangeTokenRepository.save(emailChangeToken);
+		emailChangeTokenRepository.deleteByUser(user);
 
+		String token = UUID.randomUUID().toString();
+		LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
 
-        emailService.sendChangeEmailVerification(newEmail,user.getUsername(),token);
-    }
+		EmailChangeToken emailChangeToken = new EmailChangeToken();
+		emailChangeToken.setUser(user);
+		emailChangeToken.setNewEmail(newEmail);
+		emailChangeToken.setToken(token);
+		emailChangeToken.setExpiryDate(expiryDate);
 
-    @Override
-    @Transactional
-    public void changeEmail(String token) {
-        EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
-                .orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
+		emailChangeTokenRepository.save(emailChangeToken);
 
-        if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token süresi dolmuş!");
-        }
+		emailService.sendChangeEmailVerification(newEmail, user.getUsername(), token);
+	}
 
-        User user = emailChangeToken.getUser();
-        user.setEmail(emailChangeToken.getNewEmail());
-        userRepository.save(user);
+	@Override
+	@Transactional
+	public void changeEmail(String token) {
+		EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
+				.orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
 
-        emailChangeTokenRepository.delete(emailChangeToken);
+		if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+			throw new TokenExpiredException("Token süresi dolmuş!");
+		}
 
-    }
+		User user = emailChangeToken.getUser();
+		user.setEmail(emailChangeToken.getNewEmail());
+		userRepository.save(user);
+
+		emailChangeTokenRepository.delete(emailChangeToken);
+
+	}
+
+	@Override
+	@Transactional
+	public void deleteByUserId(Long userId) {
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		connectionRepository.deleteByUserIdOrConnectedUserId(userId, userId);
+		connectionRequestRepository.deleteBySenderIdOrReceiverId(userId, userId);
+
+		this.userRepository.deleteById(userId);
+
+	}
 
 }

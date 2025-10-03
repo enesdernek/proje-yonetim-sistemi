@@ -34,6 +34,7 @@ public interface UserService {
 	
 	public void changeEmail(String token);
 	
+	public void deleteByUserId(Long userId);
 	
 
 }

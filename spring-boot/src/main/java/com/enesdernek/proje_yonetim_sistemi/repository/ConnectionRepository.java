@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import com.enesdernek.proje_yonetim_sistemi.entity.Connection;
 
+import jakarta.transaction.Transactional;
+
 @Repository
 public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
@@ -23,5 +25,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 	
     @Query(value = "SELECT * FROM connections c WHERE (c.user_id = :authUserId AND c.connected_user_id = :otherUserId) OR (c.user_id = :otherUserId AND c.connected_user_id = :authUserId)", nativeQuery = true)
     Optional<Connection> findConnectionBetweenUsers(@Param("authUserId") Long authUserId, @Param("otherUserId") Long otherUserId);
-
+    
+    @Transactional
+    void deleteByUserIdOrConnectedUserId(Long userId, Long connectedUserId);
 }
