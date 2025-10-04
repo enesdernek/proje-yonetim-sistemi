@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
@@ -53,6 +55,39 @@ public class UserController {
 				this.userService.authenticate(userDtoAuthIU), "Kullanıcı başarıyla giriş yaptı.");
 		return new ResponseEntity<SuccessDataResult<AuthResponse>>(result, HttpStatus.OK);
 	}
+	
+	@DeleteMapping("/delete-profile-image")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<UserDto>> deleteProfileImage(Authentication authentication) {
+	    User authUser = (User) authentication.getPrincipal();
+	    Long userId = authUser.getUserId();
+
+	    UserDto updatedUser = userService.deleteProfileImageByUserId(userId);
+
+	    SuccessDataResult<UserDto> result = new SuccessDataResult<>(
+	            updatedUser,
+	            "Profil resmi başarıyla silindi."
+	    );
+	    return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/upload-profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<SuccessDataResult<UserDto>> uploadProfileImage(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        User authUser = (User) authentication.getPrincipal();
+        Long userId = authUser.getUserId();
+
+        UserDto updatedUser = userService.uploadProfileImageByUserId(userId, file);
+
+        SuccessDataResult<UserDto> result = new SuccessDataResult<>(
+                updatedUser,
+                "Profil resmi başarıyla güncellendi."
+        );
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
 	@PostMapping("/send-change-email-adress-email")
 	@PreAuthorize("isAuthenticated()")

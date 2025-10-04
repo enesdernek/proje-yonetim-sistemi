@@ -1,5 +1,6 @@
 package com.enesdernek.proje_yonetim_sistemi.service.concretes;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
@@ -89,6 +91,9 @@ public class UserManager implements UserService {
 	@Autowired
 	private ConnectionRequestRepository connectionRequestRepository;
 
+	@Autowired
+	private FileStorageManager fileStorageManager;
+
 	@Override
 	@Transactional
 	public UserDto register(UserDtoIU userDtoIU) {
@@ -117,16 +122,15 @@ public class UserManager implements UserService {
 		user.setPassword(passwordEncoder.encode(userDtoIU.getPassword()));
 		user.setRole(Role.USER);
 		user.setEnabled(false);
-		
 
 		User savedUser = userRepository.save(user);
-		
+
 		sendRegisterVerificationEmail(user);
 
 		return userMapper.toDto(savedUser);
 
 	}
-	
+
 	public void sendRegisterVerificationEmail(User existingUser) {
 		emailVerificationTokenRepository.deleteByUser(existingUser);
 
@@ -142,27 +146,27 @@ public class UserManager implements UserService {
 
 		emailService.sendRegisterVerificationEmail(existingUser.getEmail(), token);
 	}
-	
+
 	@Override
 	@Transactional
 	public void verifyEmail(String token) {
-	    EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
-	            .orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
+		EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
+				.orElseThrow(() -> new InvalidCodeException("Doğrulama kodu hatalı!"));
 
-	    if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-	        throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
-	    }
+		if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+			throw new TokenExpiredException("Doğrulama kodunun süresi dolmuş!");
+		}
 
-	    User user = verificationToken.getUser();
+		User user = verificationToken.getUser();
 
-	    if (user.isEnabled()) {
-	        throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
-	    }
+		if (user.isEnabled()) {
+			throw new AlreadyValidException("Bu hesap zaten doğrulanmış!");
+		}
 
-	    user.setEnabled(true);
-	    userRepository.save(user);
+		user.setEnabled(true);
+		userRepository.save(user);
 
-	    emailVerificationTokenRepository.delete(verificationToken);
+		emailVerificationTokenRepository.delete(verificationToken);
 	}
 
 	@Override
@@ -253,15 +257,16 @@ public class UserManager implements UserService {
 		resetToken.setExpiryDate(expiryDate);
 		passwordResetTokenRepository.save(resetToken);
 
-		emailService.sendResetPasswordEmail(resetToken.getUser().getEmail(),token);
+		emailService.sendResetPasswordEmail(resetToken.getUser().getEmail(), token);
 	}
 
 	@Override
 	@Transactional
 	public void resetPassword(PasswordResetRequest request, String token) {
-		
-		PasswordResetToken passwordResetToken = this.passwordResetTokenRepository.findByToken(token).orElseThrow(()->new NotFoundException("Token bulunamadı"));
-		
+
+		PasswordResetToken passwordResetToken = this.passwordResetTokenRepository.findByToken(token)
+				.orElseThrow(() -> new NotFoundException("Token bulunamadı"));
+
 		User user = passwordResetToken.getUser();
 
 		if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
@@ -306,24 +311,24 @@ public class UserManager implements UserService {
 
 	@Transactional
 	public void changeEmail(String token, HttpServletRequest request, HttpServletResponse response) {
-	    EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
-	            .orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
+		EmailChangeToken emailChangeToken = emailChangeTokenRepository.findByToken(token)
+				.orElseThrow(() -> new NotFoundException("Geçersiz veya bulunamadı"));
 
-	    if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-	        throw new TokenExpiredException("Token süresi dolmuş!");
-	    }
+		if (emailChangeToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+			throw new TokenExpiredException("Token süresi dolmuş!");
+		}
 
-	    User user = emailChangeToken.getUser();
-	    user.setEmail(emailChangeToken.getNewEmail());
-	    userRepository.save(user);
+		User user = emailChangeToken.getUser();
+		user.setEmail(emailChangeToken.getNewEmail());
+		userRepository.save(user);
 
-	    emailChangeTokenRepository.delete(emailChangeToken);
+		emailChangeTokenRepository.delete(emailChangeToken);
 
-	    SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    if (auth != null) {
-	        logoutHandler.logout(request, response, auth);
-	    }
+		SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			logoutHandler.logout(request, response, auth);
+		}
 	}
 
 	@Override
@@ -338,5 +343,41 @@ public class UserManager implements UserService {
 		this.userRepository.deleteById(userId);
 
 	}
+
+	@Override
+	public UserDto uploadProfileImageByUserId(Long userId, MultipartFile file) {
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		String oldImageUrl = user.getProfileImageUrl();
+		if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+			String oldFileName = Paths.get(oldImageUrl).getFileName().toString();
+			this.fileStorageManager.deleteFileIfExist("profile-images", oldFileName);
+		}
+
+		String newImageUrl = fileStorageManager.saveFile(file, "profile-images");
+		user.setProfileImageUrl(newImageUrl);
+		userRepository.save(user);
+
+		return userMapper.toDto(user);
+	}
+	
+	@Override
+	public UserDto deleteProfileImageByUserId(Long userId) {
+	    User user = userRepository.findById(userId)
+	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+	    String oldImageUrl = user.getProfileImageUrl();
+	    if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+	        String oldFileName = Paths.get(oldImageUrl).getFileName().toString();
+	        fileStorageManager.deleteFileIfExist("profile-images", oldFileName);
+	    }
+
+	    user.setProfileImageUrl(null);
+	    userRepository.save(user);
+
+	    return userMapper.toDto(user);
+	}
+
 
 }
