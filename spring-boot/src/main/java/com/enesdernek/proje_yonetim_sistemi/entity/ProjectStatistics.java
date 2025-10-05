@@ -22,7 +22,7 @@ public class ProjectStatistics {
     private int completedTasks = 0;
     private int pendingTasks = 0;
 
-    private double completionRate = 0.0; // tamamlanma oranı %
+    private double completionRate = 0.0;
 
     private int totalMembers = 0;
 }
