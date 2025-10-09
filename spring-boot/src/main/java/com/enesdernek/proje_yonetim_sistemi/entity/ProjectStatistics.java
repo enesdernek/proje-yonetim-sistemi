@@ -15,7 +15,7 @@ public class ProjectStatistics {
     private Long statsId;
 
     @OneToOne
-    @JoinColumn(name = "project_id")
+    @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
     private int totalTasks = 0;

@@ -25,9 +25,8 @@ public class ProjectStatisticsManager implements ProjectStatisticsService{
 	private ProjectStatisticsMapper projectStatisticsMapper;
 
 	@Override
-	public ProjectStatisticsDto create(Long projectId) {
+	public ProjectStatisticsDto create(Project project) {
 		
-		Project project = this.projectRepository.findById(projectId).orElseThrow(()->new NotFoundException("Proje bulunamadı."));
 		ProjectStatistics statistics = new ProjectStatistics();
 		statistics.setCompletedTasks(0);
 		statistics.setCompletionRate(0);

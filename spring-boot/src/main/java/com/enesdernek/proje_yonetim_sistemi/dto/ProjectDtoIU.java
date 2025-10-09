@@ -1,8 +1,5 @@
 package com.enesdernek.proje_yonetim_sistemi.dto;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,6 +22,5 @@ public class ProjectDtoIU {
 	@NotBlank
     private String description;
     
-    private List<ProjectMemberRequest> members; 
 
 }

@@ -9,7 +9,7 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 
 public interface ProjectMemberService {
 
-	public List<ProjectMemberDto> add(Long projectId, List<Long> userIds);
+	public List<ProjectMemberDto> add(Long projectId, Long adderId, List<ProjectMemberRequest> requests);
 
-	public void addMembersAfterProjectCreate(Project project, User creator,  List<ProjectMemberRequest> members);
+	public void addCreatorAsProjectManagerAfterProjectCreate(Project project, User creator);
 }

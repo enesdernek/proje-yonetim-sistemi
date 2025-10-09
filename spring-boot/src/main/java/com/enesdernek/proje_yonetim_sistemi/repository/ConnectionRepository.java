@@ -28,4 +28,12 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     
     @Transactional
     void deleteByUserIdOrConnectedUserId(Long userId, Long connectedUserId);
+    
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
+            "FROM Connection c " +
+            "WHERE (c.userId = :userId1 AND c.connectedUserId = :userId2) " +
+            "   OR (c.userId = :userId2 AND c.connectedUserId = :userId1)")
+     boolean existsConnectionBetweenUsers(@Param("userId1") Long userId1,
+                                          @Param("userId2") Long userId2);
+
 }

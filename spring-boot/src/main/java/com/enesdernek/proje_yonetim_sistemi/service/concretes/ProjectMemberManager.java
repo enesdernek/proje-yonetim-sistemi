@@ -15,78 +15,89 @@ import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 import com.enesdernek.proje_yonetim_sistemi.mapper.ProjectMemberMapper;
+import com.enesdernek.proje_yonetim_sistemi.repository.ConnectionRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
 
 @Service
-public class ProjectMemberManager implements ProjectMemberService{
-	
-	 @Autowired
-	    private ProjectMemberRepository projectMemberRepository;
+public class ProjectMemberManager implements ProjectMemberService {
 
-	    @Autowired
-	    private UserRepository userRepository;
-	    
-	    @Autowired
-	    private ProjectRepository projectRepository;
-	    
-	    @Autowired
-	    private ProjectMemberMapper projectMemberMapper;
+	@Autowired
+	private ProjectMemberRepository projectMemberRepository;
 
-	    @Override
-	    public void addMembersAfterProjectCreate(Project project, User creator,   List<ProjectMemberRequest> members) {
-	        ProjectMember creatorMember = new ProjectMember();
-	        creatorMember.setProject(project);
-	        creatorMember.setUser(creator);
-	        creatorMember.setRole(ProjectRole.MANAGER);
-	        creatorMember.setJoinedAt(LocalDateTime.now());
-	        projectMemberRepository.save(creatorMember);
-	        project.getMembers().add(creatorMember);
+	@Autowired
+	private UserRepository userRepository;
 
-	        if (members != null && !members.isEmpty()) {
-	            for (ProjectMemberRequest memberRequest : members) {
-	                User user = userRepository.findById(memberRequest.getUserId())
-	                        .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı: " + memberRequest.getUserId()));
+	@Autowired
+	private ProjectRepository projectRepository;
 
-	                ProjectMember projectMember = new ProjectMember();
-	                projectMember.setProject(project);
-	                projectMember.setUser(user);
-	                projectMember.setRole(memberRequest.getRole() != null ? memberRequest.getRole() : ProjectRole.MEMBER);
-	                projectMember.setJoinedAt(LocalDateTime.now());
-	                projectMemberRepository.save(projectMember);
-	                project.getMembers().add(projectMember);
-	            }
-	        }
-	    
-	    }
+	@Autowired
+	private ProjectMemberMapper projectMemberMapper;
 
-	    @Override
-	    public List<ProjectMemberDto> add(Long projectId, List<Long> userIds) {
-	        Project project = projectRepository.findById(projectId)
-	                .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+	@Autowired
+	private ConnectionRepository connectionRepository;
 
-	        List<ProjectMemberDto> result = new ArrayList<>();
+	@Override
+	public void addCreatorAsProjectManagerAfterProjectCreate(Project project, User creator) {
+		ProjectMember creatorMember = new ProjectMember();
+		creatorMember.setProject(project);
+		creatorMember.setUser(creator);
+		creatorMember.setRole(ProjectRole.MANAGER);
+		creatorMember.setJoinedAt(LocalDateTime.now());
+		projectMemberRepository.save(creatorMember);
+		project.getMembers().add(creatorMember);
 
-	        for (Long userId : userIds) {
-	            User user = userRepository.findById(userId)
-	                    .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı: " + userId));
+	}
 
-	            if (projectMemberRepository.existsByProjectAndUser(project, user)) continue;
+	@Override
+	public List<ProjectMemberDto> add(Long projectId, Long adderId, List<ProjectMemberRequest> requests) {
+		Project project = projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-	            ProjectMember member = new ProjectMember();
-	            member.setProject(project);
-	            member.setUser(user);
-	            member.setRole(ProjectRole.MEMBER);
-	            member.setJoinedAt(LocalDateTime.now());
-	            projectMemberRepository.save(member);
+		User adderAsUser = userRepository.findById(adderId).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+		
+		ProjectMember adderAsManager = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(adderId,projectId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
+		
+		if(adderAsManager.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Projeye üye eklemeye yetkiniz yok.");
+		}
 
-	            result.add(projectMemberMapper.toDto(member));
-	        }
+		List<ProjectMemberDto> result = new ArrayList<>();
 
-	        return result;
-	    }
+		for (ProjectMemberRequest request : requests) {
+			User user = userRepository.findById(request.getUserId())
+					.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+			
+			boolean isUsersConnected = this.connectionRepository.existsConnectionBetweenUsers(adderId,
+					request.getUserId());
+
+			if (!isUsersConnected) {
+				throw new UnauthorizedActionException("Bağlantınız olmayan kullanıcıyı projeye ekleyemezsiniz.");
+			}
+		}
+
+		for (ProjectMemberRequest request : requests) {
+			User user = userRepository.findById(request.getUserId())
+					.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+			if (projectMemberRepository.existsByProjectAndUser(project, user))
+				continue;
+
+			ProjectMember member = new ProjectMember();
+			member.setProject(project);
+			member.setUser(user);
+			member.setRole(request.getRole());
+			member.setJoinedAt(LocalDateTime.now());
+			projectMemberRepository.save(member);
+
+			result.add(projectMemberMapper.toDto(member));
+		}
+
+		return result;
+	}
 
 }

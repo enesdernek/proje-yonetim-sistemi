@@ -24,6 +24,8 @@ import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberServi
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectService;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectStatisticsService;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class ProjectManager implements ProjectService{
 	
@@ -49,21 +51,23 @@ public class ProjectManager implements ProjectService{
 	private ProjectMapper projectMapper;
 
 	@Override
+	@Transactional
 	public ProjectDto create(Long userId, ProjectDtoIU projectDtoIU, MultipartFile file) {
 	    User creator = userRepository.findById(userId)
 	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
 
 	    String projectImageUrl = uploadProjectImage(null, file);
-
+	    
 	    Project project = projectMapper.toEntity(projectDtoIU);
+	    System.out.println(project);
 	    project.setProjectImageUrl(projectImageUrl);
 	    project.setCreator(creator);
-
-	    project = projectRepository.save(project);
-
-	    projectMemberService.addMembersAfterProjectCreate(project, creator, projectDtoIU.getMembers());
 	    
-	    this.projectStatisticsService.create(project.getProjectId());
+	    project = this.projectRepository.save(project);
+	    
+	    projectMemberService.addCreatorAsProjectManagerAfterProjectCreate(project, creator);
+	    
+	    this.projectStatisticsService.create(project);
 
 	    return projectMapper.toDto(project);
 	}

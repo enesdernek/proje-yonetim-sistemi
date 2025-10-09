@@ -20,12 +20,14 @@ import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+
 @RestController
 @RequestMapping(path = "/api/projects")
 public class ProjectController {
 
 	@Autowired
 	private ProjectService projectService;
+	
 
 	@PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@PreAuthorize("isAuthenticated()")
