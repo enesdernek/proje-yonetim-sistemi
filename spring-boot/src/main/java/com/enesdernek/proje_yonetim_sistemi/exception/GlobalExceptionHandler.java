@@ -14,6 +14,7 @@ import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.ErrorResult;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyConnectedException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyExistsException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.AlreadyValidException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.BusinessException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.EmailAlreadyExistsException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.FalsePasswordException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.InvalidCodeException;
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
 	    ErrorDataResult<Map<String, String>> result = new ErrorDataResult<>(errors, "Doğrulama hatası oluştu");
 
 	    return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<ErrorResult> handleBusinessException(BusinessException ex) {
+	    ErrorResult error = new ErrorResult(ex.getMessage());
+	    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}
 	
 	@ExceptionHandler(InvalidPasswordException.class)
