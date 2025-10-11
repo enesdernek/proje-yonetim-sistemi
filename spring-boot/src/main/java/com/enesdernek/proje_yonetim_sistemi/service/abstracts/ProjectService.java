@@ -4,6 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDtoIU;
+import com.enesdernek.proje_yonetim_sistemi.dto.ProjectListDtoPagedResponse;
 
 public interface ProjectService {
 	
@@ -21,5 +22,10 @@ public interface ProjectService {
 	
 	public ProjectDto completeProject(Long userId, Long projectId);
 
+	public ProjectDto updateProject(Long userId,Long projectId,ProjectDtoIU projectDtoIU);
+	
+	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId,int pageNo, int pageSize);
+	
+	public ProjectDto getByProjectId(Long userId,Long projectId);
 
 }

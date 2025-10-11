@@ -3,13 +3,17 @@ package com.enesdernek.proje_yonetim_sistemi.service.concretes;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDtoIU;
+import com.enesdernek.proje_yonetim_sistemi.dto.ProjectListDtoPagedResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.Project;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
@@ -58,6 +62,67 @@ public class ProjectManager implements ProjectService {
 	private ProjectMapper projectMapper;
 
 	private ProjectStatus projectStatus;
+	
+	@Override
+	public ProjectDto getByProjectId(Long userId, Long projectId) {
+		
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+		}
+		
+		return this.projectMapper.toDto(project);
+	}
+
+	
+
+	@Override
+	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId,int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+		
+		List<Project> projects = this.projectRepository.findAllByUserIdPaged(userId, pageable);
+		
+		List<ProjectDto> projectDtos = this.projectMapper.toDtoList(projects);
+		
+	    Long totalElements = this.projectRepository.countProjectsByUserId(userId);
+
+	    int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+		
+		ProjectListDtoPagedResponse response = new ProjectListDtoPagedResponse();
+		response.setTotalElements(totalElements);
+		response.setTotalPages(totalPages);
+		response.setProjectDtos(projectDtos);
+		
+		return response;
+	}
+
+
+	@Override
+	public ProjectDto updateProject(Long userId, Long projectId, ProjectDtoIU projectDtoIU) {
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+		}
+		
+		project.setDescription(projectDtoIU.getDescription());
+		project.setName(projectDtoIU.getName());
+		this.projectRepository.save(project);
+		
+		return this.projectMapper.toDto(project);
+	}
+
 	
 	@Override
 	public ProjectDto completeProject(Long userId, Long projectId) {
@@ -252,6 +317,7 @@ public class ProjectManager implements ProjectService {
 
 		return this.projectMapper.toDto(project);
 	}
+
 
 	
 
