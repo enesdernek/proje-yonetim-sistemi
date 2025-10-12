@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.enesdernek.proje_yonetim_sistemi.entity.Project;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 
 @Repository
@@ -21,4 +22,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 	List<ProjectMember> getAllByProject_ProjectId(@Param("projectId") Long projectId);
 	
 	Optional<ProjectMember> deleteByUser_UserIdAndProject_ProjectId(Long deletedUserId,Long projectId);
+	
+	long countByProject_ProjectIdAndRole(Long projectId, ProjectRole role);
 }

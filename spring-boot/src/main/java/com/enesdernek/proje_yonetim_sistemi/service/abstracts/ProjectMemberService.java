@@ -5,6 +5,7 @@ import java.util.List;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberRequest;
 import com.enesdernek.proje_yonetim_sistemi.entity.Project;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 
 public interface ProjectMemberService {
@@ -18,5 +19,7 @@ public interface ProjectMemberService {
 	List<ProjectMemberDto> getMembersByProjectId(Long userId, Long projectId);
 	
 	public List<ProjectMemberDto> deleteMemberFromProject(Long userId,Long deletedUserId,Long projectId);
+	
+	public ProjectMemberDto changeMembersRole(Long userId, Long roleChangedUserId, Long projectId, ProjectRole role);
 
 }

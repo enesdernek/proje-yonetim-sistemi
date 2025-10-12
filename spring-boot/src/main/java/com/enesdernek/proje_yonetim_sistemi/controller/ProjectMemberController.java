@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberRequest;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
 
@@ -27,6 +29,18 @@ public class ProjectMemberController {
 	
 	@Autowired
 	private ProjectMemberService projectMemberService;
+	
+	@PutMapping("/change-members-role")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> changeMembersRole(Authentication auth,@RequestParam Long roleChangedUserId,@RequestParam Long projectId,@RequestParam ProjectRole role) {
+		User user = (User) auth.getPrincipal();
+		Long userId = user.getUserId();
+		
+		ProjectMemberDto dto = this.projectMemberService.changeMembersRole(userId, roleChangedUserId, projectId, role);
+		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<>(dto,"Üyenin rolü başarıyla değiştirildi.");
+		
+		return new ResponseEntity<>(result,HttpStatus.OK);
+	}
 	
 	@DeleteMapping("/delete-member-by-user-id-and-project-id")
 	@PreAuthorize("isAuthenticated()")

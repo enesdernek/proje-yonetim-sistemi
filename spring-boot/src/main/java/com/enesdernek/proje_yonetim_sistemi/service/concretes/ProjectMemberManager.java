@@ -155,4 +155,36 @@ public class ProjectMemberManager implements ProjectMemberService {
 		return this.projectMemberMapper.toDtoList(members);
 	}
 
+	@Override
+	public ProjectMemberDto changeMembersRole(Long userId, Long roleChangedUserId, Long projectId, ProjectRole role) {
+	    Project project = this.projectRepository.findById(projectId)
+	            .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+	    ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+	    ProjectMember roleChangedUser = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(roleChangedUserId, projectId)
+	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+	    if(member.getRole() != ProjectRole.MANAGER) {
+	        throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+	    }
+
+	    if(roleChangedUser.getRole() == role) {
+	        throw new BusinessException("Kullanıcı zaten bu rolde.");
+	    }
+
+	    if(roleChangedUser.getRole() == ProjectRole.MANAGER) {
+	        long managerCount = this.projectMemberRepository.countByProject_ProjectIdAndRole(projectId, ProjectRole.MANAGER);
+	        if(roleChangedUser.getUser().getUserId().equals(userId) && managerCount <= 1) {
+	            throw new BusinessException("Projede en az bir manager olmalı, rolünüzü değiştiremezsiniz.");
+	        }
+	    }
+
+	    roleChangedUser.setRole(role);
+	    this.projectMemberRepository.save(roleChangedUser);
+
+	    return this.projectMemberMapper.toDto(roleChangedUser);
+	}
+
 }
