@@ -27,5 +27,7 @@ public interface ProjectService {
 	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId,int pageNo, int pageSize);
 	
 	public ProjectDto getByProjectId(Long userId,Long projectId);
+	
+	public void deleteProjectByProjectId(Long projectId);
 
 }

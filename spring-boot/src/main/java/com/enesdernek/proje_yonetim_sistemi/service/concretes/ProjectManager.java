@@ -319,6 +319,15 @@ public class ProjectManager implements ProjectService {
 	}
 
 
+
+	@Override
+	public void deleteProjectByProjectId(Long projectId) {
+		
+		this.projectRepository.deleteById(projectId);
+		
+	}
+
+
 	
 
 	
