@@ -13,7 +13,9 @@ import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberRequest;
 import com.enesdernek.proje_yonetim_sistemi.entity.Project;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectStatus;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.BusinessException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 import com.enesdernek.proje_yonetim_sistemi.mapper.ProjectMemberMapper;
@@ -22,6 +24,8 @@ import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ProjectMemberManager implements ProjectMemberService {
@@ -58,11 +62,14 @@ public class ProjectMemberManager implements ProjectMemberService {
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-		User adderAsUser = userRepository.findById(adderId).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-		
-		ProjectMember adderAsManager = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(adderId,projectId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
-		
-		if(adderAsManager.getRole() != ProjectRole.MANAGER) {
+		User adderAsUser = userRepository.findById(adderId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
+
+		ProjectMember adderAsManager = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(adderId, projectId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		if (adderAsManager.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Projeye üye eklemeye yetkiniz yok.");
 		}
 
@@ -71,7 +78,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 		for (ProjectMemberRequest request : requests) {
 			User user = userRepository.findById(request.getUserId())
 					.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-			
+
 			boolean isUsersConnected = this.connectionRepository.existsConnectionBetweenUsers(adderId,
 					request.getUserId());
 
@@ -98,6 +105,54 @@ public class ProjectMemberManager implements ProjectMemberService {
 		}
 
 		return result;
+	}
+
+	@Override
+	public ProjectMemberDto getByUserIdAndProjectId(Long userId, Long projectId) {
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		return this.projectMemberMapper.toDto(member);
+	}
+
+	@Override
+	public List<ProjectMemberDto> getMembersByProjectId(Long userId, Long projectId) {
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		List<ProjectMember> members = this.projectMemberRepository.getAllByProject_ProjectId(projectId);
+
+		return this.projectMemberMapper.toDtoList(members);
+	}
+
+	@Override
+	@Transactional
+	public List<ProjectMemberDto> deleteMemberFromProject(Long userId, Long deletedUserId, Long projectId) {
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		if (member.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Üye silmeye yetkiniz yok.");
+		}
+
+		ProjectMember deleteRequestedMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(deletedUserId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		if (member.getUser().getUserId() == deleteRequestedMember.getUser().getUserId()) {
+            throw new BusinessException("Kendinizi bu şekilde silemezsiniz.");
+		}
+
+		ProjectMember deletedMember = this.projectMemberRepository
+				.deleteByUser_UserIdAndProject_ProjectId(deletedUserId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		List<ProjectMember> members = this.projectMemberRepository.getAllByProject_ProjectId(projectId);
+
+		return this.projectMemberMapper.toDtoList(members);
 	}
 
 }

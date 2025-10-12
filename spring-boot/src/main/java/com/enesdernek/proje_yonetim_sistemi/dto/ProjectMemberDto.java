@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProjectMemberDto {
 	
-
     private Long memberId;
 
     private ProjectDto projectDto;

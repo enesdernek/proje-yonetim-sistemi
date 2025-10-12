@@ -12,4 +12,11 @@ public interface ProjectMemberService {
 	public List<ProjectMemberDto> add(Long projectId, Long adderId, List<ProjectMemberRequest> requests);
 
 	public void addCreatorAsProjectManagerAfterProjectCreate(Project project, User creator);
+	
+	public ProjectMemberDto getByUserIdAndProjectId(Long userId,Long projectId);
+	
+	List<ProjectMemberDto> getMembersByProjectId(Long userId, Long projectId);
+	
+	public List<ProjectMemberDto> deleteMemberFromProject(Long userId,Long deletedUserId,Long projectId);
+
 }
