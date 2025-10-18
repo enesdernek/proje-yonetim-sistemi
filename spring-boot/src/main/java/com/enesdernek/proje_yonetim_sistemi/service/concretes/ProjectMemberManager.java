@@ -78,7 +78,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 		for (ProjectMemberRequest request : requests) {
 			User user = userRepository.findById(request.getUserId())
 					.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-
+						
 			boolean isUsersConnected = this.connectionRepository.existsConnectionBetweenUsers(adderId,
 					request.getUserId());
 
@@ -110,7 +110,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 	@Override
 	public ProjectMemberDto getByUserIdAndProjectId(Long userId, Long projectId) {
 		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
-				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));		
 		return this.projectMemberMapper.toDto(member);
 	}
 

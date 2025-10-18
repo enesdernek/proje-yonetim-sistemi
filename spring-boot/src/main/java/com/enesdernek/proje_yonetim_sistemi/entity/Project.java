@@ -49,9 +49,6 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 
-    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ProjectStatistics statistics;
-
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();

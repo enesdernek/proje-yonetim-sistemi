@@ -25,7 +25,6 @@ import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedAct
 import com.enesdernek.proje_yonetim_sistemi.mapper.ProjectMapper;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
-import com.enesdernek.proje_yonetim_sistemi.repository.ProjectStatisticsRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.TaskRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
@@ -254,8 +253,6 @@ public class ProjectManager implements ProjectService {
 		project = this.projectRepository.save(project);
 
 		projectMemberService.addCreatorAsProjectManagerAfterProjectCreate(project, creator);
-
-		this.projectStatisticsService.create(project);
 
 		return projectMapper.toDto(project);
 	}

@@ -8,7 +8,7 @@ import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.entity.Project;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, ProjectMemberMapper.class, TaskMapper.class, ProjectStatisticsMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, ProjectMemberMapper.class, TaskMapper.class})
 public interface ProjectMapper {
 	
 	ProjectDto toDto(Project project);

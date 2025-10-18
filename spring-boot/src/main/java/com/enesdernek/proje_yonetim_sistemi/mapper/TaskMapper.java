@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, ProjectStatisticsMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface TaskMapper {
 
     TaskDto toDto(Task task);
