@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -29,10 +30,10 @@ public class TaskDtoIU {
 	private LocalDate startDate;
 	private LocalDate dueDate;
 
-	private Integer progress = 0;
-
+	@NotNull
 	private Long assignedUserId;
 	
+	@NotNull
 	private Long projectId;
 	
 

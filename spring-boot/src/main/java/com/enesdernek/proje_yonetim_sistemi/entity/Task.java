@@ -29,15 +29,13 @@ public class Task {
     private LocalDate startDate;
     private LocalDate dueDate;
 
-    private Integer progress = 0;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
-    private User assignedUser;
+    private ProjectMember assignedUser;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
-    private User creator;
+    private ProjectMember creator;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

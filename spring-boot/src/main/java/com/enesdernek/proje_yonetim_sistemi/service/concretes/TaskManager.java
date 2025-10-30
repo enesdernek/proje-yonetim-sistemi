@@ -8,11 +8,19 @@ import org.springframework.stereotype.Service;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.entity.Project;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
+import com.enesdernek.proje_yonetim_sistemi.entity.Task;
 import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
+import com.enesdernek.proje_yonetim_sistemi.entity.User;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
+import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.UnauthorizedActionException;
 import com.enesdernek.proje_yonetim_sistemi.mapper.TaskMapper;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.TaskRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.TaskService;
 
 @Service
@@ -29,17 +37,42 @@ public class TaskManager implements TaskService {
 	
 	@Autowired
 	private ProjectRepository projectRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
-	public TaskDto createTask(Long authUserId, Long projectId, TaskDtoIU taskDtoIU) {
-		// TODO Auto-generated method stub
-		return null;
+	public TaskDto createTask(Long authUserId,TaskDtoIU taskDtoIU) {
+		
+		Project project = this.projectRepository.findById(taskDtoIU.getProjectId()).orElseThrow(()->new NotFoundException("Proje bulunamadı"));
+		
+		ProjectMember manager = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, taskDtoIU.getProjectId()).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı"));
+		
+		if (!manager.getRole().equals(ProjectRole.MANAGER)) {
+		    throw new UnauthorizedActionException("Görev oluşturma yetkiniz yok.");
+		}
+				
+		ProjectMember assignedMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(taskDtoIU.getAssignedUserId(), taskDtoIU.getProjectId()).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı"));
+		
+		Task task = this.taskMapper.toEntity(taskDtoIU);
+		
+		task.setCreator(manager);
+		
+		task.setProject(project);
+		
+		task.setAssignedUser(assignedMember);
+		
+		this.taskRepository.save(task);
+		
+		return this.taskMapper.toDto(task);
 	}
 
 	@Override
 	public TaskDto getTaskById(Long authUserId, Long taskId) {
-		// TODO Auto-generated method stub
-		return null;
+		User user = this.userRepository.findById(authUserId).orElseThrow(()->new NotFoundException("User bulunamadı"));
+		
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı"));
+		return this.taskMapper.toDto(task);
 	}
 
 	@Override

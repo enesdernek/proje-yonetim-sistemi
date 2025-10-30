@@ -24,13 +24,11 @@ public class TaskDto {
 	    private LocalDate startDate;
 	    private LocalDate dueDate;
 
-	    private Integer progress = 0;
-
-	    private UserDto assignedUserDto;
+	    private ProjectMemberDto assignedUser;
 	    
-	    private UserDto creatorDto;
+	    private ProjectMemberDto creator;
 
-	    private ProjectDto projectDto;
+	    private ProjectDto project;
 
 	    private LocalDateTime createdAt;
 	    private LocalDateTime updatedAt;
