@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.enesdernek.proje_yonetim_sistemi.entity.Task;
+import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -36,5 +37,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 	@Query(value = "SELECT COUNT(*) FROM tasks WHERE project_id = :projectId", nativeQuery = true)
 	long countTasksByProjectId(@Param("projectId") Long projectId);
+	
+    Page<Task> findByAssignedUser_User_UserId(Long userId,Pageable pageable);
+    
+    Page<Task> findByProject_ProjectIdAndStatus(
+            Long projectId,
+            TaskStatus status,
+            Pageable pageable
+        );
+
 
 }

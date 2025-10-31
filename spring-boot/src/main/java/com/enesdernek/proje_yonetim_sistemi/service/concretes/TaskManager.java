@@ -131,15 +131,45 @@ public class TaskManager implements TaskService {
 		return response;
 	}
 
-	public TaskDtoPagedResponse getTasksAssignedToUser(Long authUserId, Long userId, int pageNo, int pageSize) {
-		return null;
+	public TaskDtoPagedResponse getUsersAllTasks(Long userId, int pageNo, int pageSize) {
+		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
+		
+		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+		
+		Page <Task> tasks = this.taskRepository.findByAssignedUser_User_UserId(userId, null);
+		
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+		
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+		
+		return response;
 
 	}
 
 	@Override
-	public List<TaskDto> getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+	public TaskDtoPagedResponse getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize) {
+		
+		ProjectMember member = this.projectMemberRepository.findById(authUserId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+		
+		if(member.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bunu yapmaya yetkiniz yok.");
+		}
+		
+		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+		
+		Page<Task> tasks = this.taskRepository.findByProject_ProjectIdAndStatus(projectId, status, pageable);
+		
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+	
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+		
+		return response;
 	}
 
 	@Override
@@ -150,12 +180,6 @@ public class TaskManager implements TaskService {
 
 	@Override
 	public TaskDto changeTaskStatus(Long authUserId, Long taskId, TaskStatus status) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public TaskDto assignTaskToMember(Long authUserId, Long taskId, Long memberId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

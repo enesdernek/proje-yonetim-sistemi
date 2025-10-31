@@ -13,6 +13,7 @@ import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataRe
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.TaskService;
 
@@ -24,6 +25,29 @@ public class TaskController {
 
 	@Autowired
 	private TaskService taskService;
+	
+	@GetMapping("get-all-tasks-by-status")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllTasksByStatus(Authentication auth, Long projectId, TaskStatus status,int pageNo, int pageSize) {
+		
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(this.taskService.getAllTasksByStatus(authUserId, projectId, status, pageNo, pageSize),
+				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@GetMapping("get-users-all-tasks")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getUsersAllTasks(Authentication auth, int pageNo, int pageSize) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(this.taskService.getUsersAllTasks(authUserId, pageNo, pageSize),
+				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 
 	@PostMapping("/create-task")
 	public ResponseEntity<SuccessDataResult<TaskDto>> createTask(Authentication auth, @Valid TaskDtoIU taskDtoIU) {
