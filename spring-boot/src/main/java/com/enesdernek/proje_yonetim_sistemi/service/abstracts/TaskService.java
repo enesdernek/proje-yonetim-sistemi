@@ -15,6 +15,8 @@ public interface TaskService {
 
 	public TaskDtoPagedResponse getTasksByProjectId(Long authUserId, Long projectId, int pageNo, int pageSize);
 
+	public TaskDtoPagedResponse getProjectTasksAssignedToProjectMember(Long authUserId, Long projectId, int pageNo, int pageSize);
+	
 	public TaskDtoPagedResponse getTasksAssignedToUser(Long authUserId, Long userId, int pageNo, int pageSize);
 
 	public List<TaskDto> getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status);

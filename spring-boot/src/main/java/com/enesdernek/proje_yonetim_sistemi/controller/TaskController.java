@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
+import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.TaskService;
 
@@ -47,6 +48,32 @@ public class TaskController {
 
 		return new ResponseEntity<>(result, HttpStatus.OK);
 
+	}
+
+	@GetMapping("/get-all-tasks-by-project-id")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getTasksByProjectId(Authentication auth,
+			Long projectId, int pageNo, int pageSize) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
+				this.taskService.getTasksByProjectId(authUserId, projectId, pageNo, pageSize),
+				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	@GetMapping("/get-all-project-tasks-assigned-to-member")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getProjectTasksAssignedToProjectMember(
+			Authentication auth, Long projectId, int pageNo, int pageSize) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
+				this.taskService.getProjectTasksAssignedToProjectMember(authUserId, projectId, pageNo, pageSize),
+				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 }
