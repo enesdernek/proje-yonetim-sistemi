@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
+import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
@@ -26,6 +28,29 @@ public class TaskController {
 
 	@Autowired
 	private TaskService taskService;
+	
+	@DeleteMapping("/delete-task")
+	public ResponseEntity<SuccessResult> deleteTask(Authentication auth, Long taskId) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		this.taskService.deleteTask(authUserId, taskId);
+		
+		SuccessResult result = new SuccessResult("Görev başarıyla silindi.");
+		
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@PutMapping("/change-task-status")
+	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatus(Authentication auth,Long taskId,TaskStatus taskStatus) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDto> result = new SuccessDataResult<>(this.taskService.changeTaskStatus(authUserId, taskId, taskStatus),
+				"Görev başarıyla güncellendi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	
 	@PutMapping("/change-task-status-to-in-progress")
 	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToInProgress(Authentication auth, Long taskId) {

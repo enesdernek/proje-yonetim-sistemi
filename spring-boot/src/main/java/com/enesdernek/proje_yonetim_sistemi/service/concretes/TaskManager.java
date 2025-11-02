@@ -215,13 +215,32 @@ public class TaskManager implements TaskService {
 	@Override
 	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus) {
 		
-		return null;
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
+		
+		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+		}
+		
+		task.setStatus(taskStatus);
+		
+		Task savedTask = this.taskRepository.save(task);
+		
+		return this.taskMapper.toDto(savedTask);
 	}
 
 	@Override
 	public void deleteTask(Long authUserId, Long taskId) {
-		// TODO Auto-generated method stub
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
 
+		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
+		
+		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+		}
+		
+		this.taskRepository.delete(task);
 	}
 
 }
