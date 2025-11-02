@@ -2,7 +2,6 @@ package com.enesdernek.proje_yonetim_sistemi.dto;
 
 import java.time.LocalDate;
 
-import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -13,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskDtoIU {
-
+public class TaskDtoUpdate {
+	
 	@NotNull
 	@Size(min=2,max=64)
 	private String title;
@@ -23,16 +22,7 @@ public class TaskDtoIU {
 	@Size(min=2,max=512)
 	private String description;
 
-	private TaskStatus status = TaskStatus.TODO;
 
-	private LocalDate startDate;
 	private LocalDate dueDate;
-
-	@NotNull
-	private Long assignedUserId;
-	
-	@NotNull
-	private Long projectId;
-	
 
 }

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +26,28 @@ public class TaskController {
 
 	@Autowired
 	private TaskService taskService;
+	
+	@PutMapping("/change-task-status-to-in-progress")
+	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToInProgress(Authentication auth, Long taskId) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDto> result = new SuccessDataResult<>(this.taskService.changeTaskStatusToInProgress(authUserId, taskId),
+				"Görev başarıyla güncellendi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@PutMapping("/update-task")
+	public ResponseEntity<SuccessDataResult<TaskDto>> updateTask(Authentication auth, Long taskId,@Valid TaskDtoIU taskDtoIU) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDto> result = new SuccessDataResult<>(this.taskService.updateTask(authUserId, taskId, taskDtoIU),
+				"Görev başarıyla güncellendi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	
 	@GetMapping("get-all-tasks-by-status")
 	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllTasksByStatus(Authentication auth, Long projectId, TaskStatus status,int pageNo, int pageSize) {

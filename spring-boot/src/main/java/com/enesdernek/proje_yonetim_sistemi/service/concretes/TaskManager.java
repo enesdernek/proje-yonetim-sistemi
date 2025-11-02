@@ -1,5 +1,6 @@
 package com.enesdernek.proje_yonetim_sistemi.service.concretes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,13 +175,46 @@ public class TaskManager implements TaskService {
 
 	@Override
 	public TaskDto updateTask(Long authUserId, Long taskId, TaskDtoIU taskDtoIU) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, taskDtoIU.getProjectId()).orElseThrow(()-> new NotFoundException("Üye bulunamadı"));
+		
+		if(member.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Yetkiniz yok.");
+		}
+		
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+		
+		task.setDescription(taskDtoIU.getDescription());
+		task.setDueDate(taskDtoIU.getDueDate());
+		task.setTitle(taskDtoIU.getTitle());
+		task.setUpdatedAt(LocalDateTime.now());
+		
+		Task newTask = this.taskRepository.save(task);
+		
+		return this.taskMapper.toDto(newTask);
 	}
 
 	@Override
-	public TaskDto changeTaskStatus(Long authUserId, Long taskId, TaskStatus status) {
-		// TODO Auto-generated method stub
+	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId) {
+		
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
+		
+		if(task.getAssignedUser().getMemberId()!= authUserId) {
+			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+		}
+		
+		task.setStatus(TaskStatus.IN_PROGRESS);
+		
+		Task savedTask = this.taskRepository.save(task);
+		
+		return this.taskMapper.toDto(savedTask);
+	}
+	
+	@Override
+	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus) {
+		
 		return null;
 	}
 

@@ -5,6 +5,7 @@ import java.util.List;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoUpdate;
 import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
 public interface TaskService {
@@ -21,11 +22,13 @@ public interface TaskService {
 
 	public TaskDtoPagedResponse getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize);
 	
-	//
-
 	public TaskDto updateTask(Long authUserId, Long taskId, TaskDtoIU taskDtoIU);
 
-	public TaskDto changeTaskStatus(Long authUserId, Long taskId, TaskStatus status);
-
+	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId);
+	
+	//
+	
+	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus);
+	
 	public void deleteTask(Long authUserId, Long taskId);
 }
