@@ -3,7 +3,8 @@ import {
     FormControlLabel, FormHelperText, Input, InputAdornment,
     InputLabel, Typography, Alert
 } from '@mui/material';
-
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import PasswordIcon from '@mui/icons-material/Password';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
@@ -13,7 +14,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useDispatch, useSelector } from 'react-redux';
-import { authenticate, register } from '../redux/slices/userSlice';
+import { authenticate, clearMessage, register } from '../redux/slices/userSlice';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,6 +52,7 @@ function Register() {
 
     const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
     const loading = useSelector((state) => state.user.loading);
+    const error = useSelector((state) => state.user.error);
 
 
     const formik = useFormik({
@@ -65,8 +67,8 @@ function Register() {
             term: false,
         },
         validationSchema: validationSchema,
-        onSubmit: async (values) => {
 
+        onSubmit: async (values) => {
             const user = {
                 username: values.username,
                 email: values.email,
@@ -76,19 +78,18 @@ function Register() {
             };
 
             try {
+                // REGISTER → throw yakalar
                 await dispatch(register(user)).unwrap();
 
-                await dispatch(authenticate({
-                    email: values.email,
-                    password: values.password,
-                })).unwrap();
-
                 navigate("/register-approved");
+
             } catch (error) {
-                console.log(error)
+                // HATA ALINCA BURAYA GELİR
+                console.log("Register Error:", error);
             }
         }
     });
+
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -144,7 +145,7 @@ function Register() {
                         <FormHelperText error>{formik.errors.username}</FormHelperText>
                     )}
 
-                
+
 
                     {/* Email */}
                     <FormControl variant="standard">
@@ -285,6 +286,25 @@ function Register() {
                             "Hesap Oluştur"
                         )}
                     </Button>
+
+                    {error && (
+                        <Alert
+                            severity="error"
+                            sx={{ mb: 2 }}
+                            action={
+                                <IconButton
+                                    aria-label="close"
+                                    color="inherit"
+                                    size="small"
+                                    onClick={() => dispatch(clearMessage())}
+                                >
+                                    <CloseIcon fontSize="inherit" />
+                                </IconButton>
+                            }
+                        >
+                            {error}
+                        </Alert>
+                    )}
 
                     {/* Link */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>

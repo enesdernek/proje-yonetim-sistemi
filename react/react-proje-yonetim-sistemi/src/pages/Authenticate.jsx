@@ -1,148 +1,85 @@
-import { Box, Button, CircularProgress, FormControl, FormHelperText, Input, InputAdornment, InputLabel, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, FormControl, FormHelperText, Input, InputAdornment, InputLabel, Typography, Alert, IconButton } from '@mui/material';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import PasswordIcon from '@mui/icons-material/Password';
-import { useFormik } from "formik"
-import * as yup from "yup"
+import CloseIcon from '@mui/icons-material/Close';
+import { useFormik } from "formik";
+import * as yup from "yup";
 import { useDispatch, useSelector } from 'react-redux';
-import { authenticate } from '../redux/slices/userSlice';
+import { authenticate, clearMessage, clearSuccessMessage, resendMailVerification } from '../redux/slices/userSlice';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert } from '@mui/material';
 
 const validationSchema = yup.object({
-  email: yup
-    .string()
-    .required("Email adresi zorunludur")
-    .email("Geçerli bir email adresi giriniz"),
-
-  password: yup
-    .string()
-    .required('Şifre zorunludur')
-    .min(8, "Şifre en az 8 karakter içermelidir")
-    .max(128, "Şifre 128 karakterden fazla olamaz"),
+  email: yup.string().required("Email zorunludur").email("Geçerli email giriniz"),
+  password: yup.string().required("Şifre zorunludur").min(8, "Şifre en az 8 karakter")
 });
 
 function Authenticate() {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const loading = useSelector((state) => state.user.loading);
+  const error = useSelector((state) => state.user.error);
 
+  const navigateToMailVerificationPage = ()=>{
+        dispatch(clearMessage())
+        dispatch(clearSuccessMessage())
+        navigate("/resend-mail-verification")
+  }
 
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: ""
-    },
-    validationSchema: validationSchema,
+    initialValues: { email: "", password: "" },
+    validationSchema,
     onSubmit: (values) => {
       dispatch(authenticate({ email: values.email, password: values.password }));
     }
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-    }
+    if (isAuthenticated) navigate("/");
   }, [isAuthenticated, navigate]);
 
+  
 
   return (
-    <Box
-      sx={{
-        height: 'auto',
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-      }}
-    >
-
+    <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
       <form onSubmit={formik.handleSubmit}>
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            width: { md: "400px", xs: "350px" },
-            padding: 4,
-            borderRadius: 2,
-            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-            backgroundColor: 'white',
-          }}
-        >
-
-          <Typography variant="h5" component="h1" textAlign="center" mb={2}>
-            Giriş Yap
-          </Typography>
-
-        
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: { md: "400px", xs: "350px" }, padding: 4, borderRadius: 2, boxShadow: '0 4px 10px rgba(0,0,0,0.1)', backgroundColor: 'white' }}>
+          
+          <Typography variant="h5" textAlign="center" mb={2}>Giriş Yap</Typography>
 
           <FormControl variant="standard">
-            <InputLabel htmlFor="email-input">
-              Email
-            </InputLabel>
+            <InputLabel>Email</InputLabel>
             <Input
-              id="email-input"
               name="email"
               type="email"
               value={formik.values.email}
               onChange={formik.handleChange}
               error={formik.touched.email && Boolean(formik.errors.email)}
-              startAdornment={
-                <InputAdornment position="start">
-                  <AlternateEmailIcon />
-                </InputAdornment>
-              }
+              startAdornment={<InputAdornment position="start"><AlternateEmailIcon /></InputAdornment>}
             />
           </FormControl>
-          {formik.touched.email && formik.errors.email && (
-            <FormHelperText error>{formik.errors.email}</FormHelperText>
-          )}
+          {formik.touched.email && formik.errors.email && <FormHelperText error>{formik.errors.email}</FormHelperText>}
 
           <FormControl variant="standard">
-            <InputLabel htmlFor="password-input">
-              Şifre
-            </InputLabel>
+            <InputLabel>Şifre</InputLabel>
             <Input
-              id="password-input"
-              type="password"
               name="password"
+              type="password"
               value={formik.values.password}
               onChange={formik.handleChange}
               error={formik.touched.password && Boolean(formik.errors.password)}
-              startAdornment={
-                <InputAdornment position="start">
-                  <PasswordIcon />
-                </InputAdornment>
-              }
+              startAdornment={<InputAdornment position="start"><PasswordIcon /></InputAdornment>}
             />
           </FormControl>
-          {formik.touched.password && formik.errors.password && (
-            <FormHelperText error>{formik.errors.password}</FormHelperText>
-          )}
+          {formik.touched.password && formik.errors.password && <FormHelperText error>{formik.errors.password}</FormHelperText>}
 
           <Button
             variant="contained"
-            color="primary"
-            type='submit'
-            sx={{
-              mt: 2,
-              paddingY: 1.5,
-              fontWeight: 'bold',
-              borderRadius: 2,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#1976d2cc',
-              },
-            }}
+            type="submit"
+            sx={{ mt: 2, paddingY: 1.5, fontWeight: 'bold', borderRadius: 2, textTransform: 'none' }}
           >
-            {loading ? (
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress size={32} sx={{ color: "white", height: "5px" }} />
-              </Box>
-            ) : "Giriş Yap"}
+            {loading ? <CircularProgress size={32} sx={{ color: 'white' }} /> : "Giriş Yap"}
           </Button>
 
           <Box
@@ -158,7 +95,9 @@ function Authenticate() {
                 color: '#1976d2',
                 cursor: 'pointer',
                 textDecoration: 'underline',
-                '&:hover': { color: '#115293' },
+                '&:hover': {
+                  color: '#115293',
+                },
               }}
               onClick={() => navigate("/password-reset")}
             >
@@ -171,7 +110,9 @@ function Authenticate() {
                 color: '#1976d2',
                 cursor: 'pointer',
                 textDecoration: 'underline',
-                '&:hover': { color: '#115293' },
+                '&:hover': {
+                  color: '#115293',
+                },
               }}
               onClick={() => navigate("/register")}
             >
@@ -179,11 +120,39 @@ function Authenticate() {
             </Typography>
           </Box>
 
+
+          {error && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                <IconButton aria-label="close" color="inherit" size="small" onClick={() => dispatch(clearMessage())}>
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+            >
+              {error}
+              {error.includes("Email doğrulanmamış kullanıcı") && (
+                <Button
+                  size="small"
+                  variant='contained'
+                  color="warning"
+                  sx={{ mt: 2, textTransform: 'none' }}
+                  onClick={()=>navigateToMailVerificationPage()}
+                  
+                  
+                >
+                  Doğrulama Mailini Yeniden Gönder
+                </Button>
+              )}
+            </Alert>
+          )}
+
+          
         </Box>
       </form>
-
     </Box>
-  )
+  );
 }
 
 export default Authenticate;
