@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../redux/slices/userSlice';
 
-export default function MenuAppBar() {
+export default function MenuAppBar({ onMenuClick }) {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function MenuAppBar() {
   const token = useSelector((state) => state.user.token)
   const user = useSelector((state) => state.user.user)
 
-  const logOutFunc = () => { 
+  const logOutFunc = () => {
     handleClose()
     dispatch(logOut())
   }
@@ -50,11 +50,12 @@ export default function MenuAppBar() {
             edge="start"
             color="inherit"
             aria-label="menu"
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, display: { xs: 'block', md: 'none' } }} // xs’de görünür, md ve üstü gizli
+            onClick={onMenuClick}  // Drawer açma fonksiyonu
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography onClick={()=>navigate("/")} variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Proje Yönetim Sistemi
           </Typography>
 
@@ -87,13 +88,13 @@ export default function MenuAppBar() {
                   onClose={handleClose}
                 >
                   <MenuItem onClick={handleClose}>Profil</MenuItem>
-                  <MenuItem onClick={()=>logOutFunc()}>Çıkış Yap</MenuItem>
+                  <MenuItem onClick={() => logOutFunc()}>Çıkış Yap</MenuItem>
                 </Menu>
               </div>
             )
               :
               (
-                <Button onClick={() => navigate("/authenticate")} color="inherit">Giriş Yap</Button>
+                <Button onClick={() => navigate("/authenticate")} variant='contained' color="success">Giriş Yap</Button>
 
               )
           }

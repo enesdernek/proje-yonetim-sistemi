@@ -9,12 +9,15 @@ import VerifyEmailPage from '../pages/VerifyEmailPage'
 import ResetPasswordPage from '../pages/ResetPasswordPage'
 import ResetPasswordResponsePage from '../pages/ResetPasswordResponsePage'
 
-function MainContent() {
+function MainContent({ drawerOpen, toggleDrawer }) {
+  
   return (
 
     <Routes>
-      <Route path="/" element={<MainPage />} />
-      <Route path="/authenticate" element={<Authenticate />} />
+      <Route
+        path="/"
+        element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}
+      />      <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />
       <Route path="/register-approved" element={<RegisterApproved />} />
       <Route path="/resend-mail-verification" element={<ResendEmailVerification />} />

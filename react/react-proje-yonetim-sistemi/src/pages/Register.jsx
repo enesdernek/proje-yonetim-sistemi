@@ -14,7 +14,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useDispatch, useSelector } from 'react-redux';
-import { authenticate, clearMessage, register } from '../redux/slices/userSlice';
+import { authenticate, clearMessage, clearSuccessMessage, register } from '../redux/slices/userSlice';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -111,6 +111,8 @@ function Register() {
                 display: 'flex',
                 justifyContent: 'center',
                 backgroundColor: '#f5f5f5',
+                mt:2
+                
             }}
         >
             <form onSubmit={formik.handleSubmit}>

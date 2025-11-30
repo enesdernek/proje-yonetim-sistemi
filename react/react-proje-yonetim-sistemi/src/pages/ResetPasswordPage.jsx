@@ -36,7 +36,7 @@ function ResetPasswordPage() {
     const successMessage = useSelector((state) => state.user.successMessage);
 
     return (
-        <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
+        <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5' , mt:2}}>
 
             <form onSubmit={formik.handleSubmit}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: { md: "400px", xs: "350px" }, padding: 4, borderRadius: 2, boxShadow: '0 4px 10px rgba(0,0,0,0.1)', backgroundColor: 'white' }}>

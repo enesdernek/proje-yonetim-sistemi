@@ -1,9 +1,7 @@
-import MenuAppBar from "../components/AppBar"
+import MenuAppBar from "../components/AppBar";
 
-function Header() {
-  return (
-    <MenuAppBar />
-  )
+function Header({ onMenuClick }) {
+  return <MenuAppBar onMenuClick={onMenuClick} />;
 }
 
-export default Header
+export default Header;
