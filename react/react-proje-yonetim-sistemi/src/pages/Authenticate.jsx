@@ -39,7 +39,10 @@ function Authenticate() {
     if (isAuthenticated) navigate("/");
   }, [isAuthenticated, navigate]);
 
-  
+   useEffect(() => {
+          dispatch(clearSuccessMessage());
+          dispatch(clearMessage());
+      }, []);
 
   return (
     <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
@@ -99,7 +102,7 @@ function Authenticate() {
                   color: '#115293',
                 },
               }}
-              onClick={() => navigate("/password-reset")}
+              onClick={() => navigate("/reset-password-mail")}
             >
               Şifremi Unuttum
             </Typography>

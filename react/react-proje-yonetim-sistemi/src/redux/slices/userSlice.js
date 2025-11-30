@@ -76,6 +76,48 @@ export const verifyEmail = createAsyncThunk(
     }
 )
 
+export const resetPasswordMail = createAsyncThunk(
+    "user/reset-password-mail",
+    async ({ email }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`${API_URL_USER}/send-reset-password-email?email=${email}`);
+
+            if (response.data.success === false) {
+                return response.data.message
+            }
+
+            return response.data
+
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || "Bir hata oluştu");
+        }
+    }
+)
+
+export const resetPassword = createAsyncThunk(
+    "user/resetPassword",
+    async ({ newPassword, token }, { rejectWithValue }) => {
+
+        try {
+            const response = await axios.put(
+                `${API_URL_USER}/reset-password?token=${token}`,
+                { newPassword }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -157,15 +199,40 @@ export const userSlice = createSlice({
             state.successMessage = action.payload; // artık direkt mesaj
         })
         builder.addCase(verifyEmail.pending, (state) => {
-            console.log("b")
-
             state.loading = true
             state.successMessage = null;
 
         })
         builder.addCase(verifyEmail.rejected, (state, action) => {
-            console.log("c")
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
 
+        builder.addCase(resetPasswordMail.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload?.message || "Şifre sıfırlama maili gönderildi";
+        })
+        builder.addCase(resetPasswordMail.pending, (state) => {
+            state.loading = true
+        })
+        builder.addCase(resetPasswordMail.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(resetPassword.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+        })
+        builder.addCase(resetPassword.pending, (state) => {
+            state.loading = true
+            state.successMessage = null
+        })
+        builder.addCase(resetPassword.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload;
             state.successMessage = null;

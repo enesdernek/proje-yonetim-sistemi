@@ -6,6 +6,8 @@ import Register from '../pages/Register'
 import RegisterApproved from '../pages/RegisterApproved'
 import ResendEmailVerification from '../pages/ResendEmailVerification'
 import VerifyEmailPage from '../pages/VerifyEmailPage'
+import ResetPasswordPage from '../pages/ResetPasswordPage'
+import ResetPasswordResponsePage from '../pages/ResetPasswordResponsePage'
 
 function MainContent() {
   return (
@@ -17,6 +19,9 @@ function MainContent() {
       <Route path="/register-approved" element={<RegisterApproved />} />
       <Route path="/resend-mail-verification" element={<ResendEmailVerification />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/reset-password-mail" element={<ResetPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordResponsePage />} />
+
     </Routes>
 
   )

@@ -97,6 +97,11 @@ function Register() {
         }
     }, [isAuthenticated]);
 
+     useEffect(() => {
+            dispatch(clearSuccessMessage());
+            dispatch(clearMessage());
+        }, []);
+
 
 
     return (
