@@ -41,6 +41,12 @@ export default function MenuAppBar({ onMenuClick }) {
     setAnchorEl(null);
   };
 
+
+  const navigateToProfilePage = () => {
+    handleClose();
+    navigate("/profile");
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" >
@@ -87,7 +93,7 @@ export default function MenuAppBar({ onMenuClick }) {
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
                 >
-                  <MenuItem onClick={handleClose}>Profil</MenuItem>
+                  <MenuItem onClick={navigateToProfilePage}>Profil</MenuItem>
                   <MenuItem onClick={() => logOutFunc()}>Çıkış Yap</MenuItem>
                 </Menu>
               </div>

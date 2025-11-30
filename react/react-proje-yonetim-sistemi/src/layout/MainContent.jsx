@@ -8,16 +8,20 @@ import ResendEmailVerification from '../pages/ResendEmailVerification'
 import VerifyEmailPage from '../pages/VerifyEmailPage'
 import ResetPasswordPage from '../pages/ResetPasswordPage'
 import ResetPasswordResponsePage from '../pages/ResetPasswordResponsePage'
+import StartPage from '../components/StartPage'
+import Profile from '../components/Profile'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
-  
+
   return (
 
     <Routes>
-      <Route
-        path="/"
-        element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}
-      />      <Route path="/authenticate" element={<Authenticate />} />
+      <Route path="/" element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}>
+        <Route index element={<StartPage />} />  {/* "/" */}
+        <Route path="profile" element={<Profile />} />  {/* "/profile" */}
+        {/* Diğer ana sayfa alt sayfaları buraya eklenebilir */}
+      </Route>
+      <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />
       <Route path="/register-approved" element={<RegisterApproved />} />
       <Route path="/resend-mail-verification" element={<ResendEmailVerification />} />

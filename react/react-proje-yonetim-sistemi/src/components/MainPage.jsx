@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import StartPage from './StartPage';
-import { Route, Routes } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import { Box, Container, Drawer, Grid } from '@mui/material';
+import Profile from './Profile';
 
 function MainPage({ drawerOpen, toggleDrawer }) {
 
   return (
-    <Box sx={{ height: "100vh", overflow: "hidden" }}>
+    <Box sx={{ height: "auto", overflow: "hidden" }}>
 
-      <Grid spacing={2} container sx={{ width: "100%", height: "100vh" }}>
+      <Grid  container sx={{ width: "100%" }}>
 
         {/* Desktop Sidebar */}
         <Grid
-          item
           sx={{
             display: { xs: "none", md: "block" },
-            height: "100%"
           }}
-          size={{ xs: 2 }}
+          size={{ md:2 }}
 
         >
           <Sidebar />
@@ -26,14 +25,12 @@ function MainPage({ drawerOpen, toggleDrawer }) {
 
         {/* Content */}
         <Grid
-          item
-          size={{ xs: 10 }}
+          size={{ xs: 12, sm:12,md:10}}
         >
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2}}>
 
-            <Routes>
-              <Route path="/" element={<StartPage />} />
-            </Routes>
+            <Outlet />
+
           </Box >
         </Grid>
 
