@@ -10,6 +10,9 @@ import ResetPasswordPage from '../pages/ResetPasswordPage'
 import ResetPasswordResponsePage from '../pages/ResetPasswordResponsePage'
 import StartPage from '../components/StartPage'
 import Profile from '../components/Profile'
+import AccountSettings from '../components/AccountSettings'
+import ChangeEmailAdress from '../components/ChangeEmailAdress'
+import ChangeEmailAdressResponsePage from '../pages/ChangeEmailResponsePage'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -17,9 +20,10 @@ function MainContent({ drawerOpen, toggleDrawer }) {
 
     <Routes>
       <Route path="/" element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}>
-        <Route index element={<StartPage />} />  {/* "/" */}
-        <Route path="profile" element={<Profile />} />  {/* "/profile" */}
-        {/* Diğer ana sayfa alt sayfaları buraya eklenebilir */}
+        <Route index element={<StartPage />} />  
+        <Route path="profile" element={<Profile />} />
+        <Route path="account-settings" element={<AccountSettings />} />
+        <Route path="change-email-adress" element={<ChangeEmailAdress />} />     
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />
@@ -28,6 +32,7 @@ function MainContent({ drawerOpen, toggleDrawer }) {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password-mail" element={<ResetPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordResponsePage />} />
+      <Route path="/change-email" element={<ChangeEmailAdressResponsePage />} />
 
     </Routes>
 

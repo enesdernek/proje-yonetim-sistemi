@@ -305,7 +305,7 @@ public class UserManager implements UserService {
 		emailChangeToken.setExpiryDate(expiryDate);
 
 		emailChangeTokenRepository.save(emailChangeToken);
-
+		
 		emailService.sendChangeEmailVerification(newEmail, user.getUsername(), token);
 	}
 

@@ -118,6 +118,95 @@ export const resetPassword = createAsyncThunk(
     }
 );
 
+export const getAuthenticatedUser = createAsyncThunk(
+    "user/get-authenticated-user",
+    async ({ token }, { rejectWithValue }) => {
+
+        try {
+            const response = await axios.get(
+                `${API_URL_USER}/me`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+export const sendChangeEmailAdressRequestMail = createAsyncThunk(
+    "user/sendChangeEmailAdressRequestMail",
+    async ({ newEmail, password, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${API_URL_USER}/send-change-email-adress-email`,
+                null,
+                {
+                    params: {
+                        newEmail: newEmail,
+                        currentPassword: password
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+export const changeEmail = createAsyncThunk(
+    "user/changeEmail",
+    async ({ token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_USER}/change-email`,
+                {},
+                {
+                    params: { token },
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -233,6 +322,48 @@ export const userSlice = createSlice({
             state.successMessage = null
         })
         builder.addCase(resetPassword.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(getAuthenticatedUser.fulfilled, (state, action) => {
+            state.user = action.payload.data;
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+        })
+        builder.addCase(getAuthenticatedUser.pending, (state) => {
+            state.loading = true
+        })
+        builder.addCase(getAuthenticatedUser.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(sendChangeEmailAdressRequestMail.fulfilled, (state, action) => {
+            state.loading = false
+            state.successMessage = action.payload.message;
+        })
+        builder.addCase(sendChangeEmailAdressRequestMail.pending, (state, action) => {
+            state.loading = true
+        })
+        builder.addCase(sendChangeEmailAdressRequestMail.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+        })
+
+        builder.addCase(changeEmail.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+
+        })
+        builder.addCase(changeEmail.pending, (state, action) => {
+            state.loading = true
+        })
+        builder.addCase(changeEmail.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload;
             state.successMessage = null;
