@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
+import com.enesdernek.proje_yonetim_sistemi.dto.ChangePhoneRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
@@ -177,5 +178,15 @@ public class UserController {
 		this.userService.deleteByUserId(userId);
 		SuccessResult result = new SuccessResult("Kullanıcı silindi.");
 		return new ResponseEntity<SuccessResult>(result, HttpStatus.OK);
+	}
+	
+	@PutMapping("/change-phone")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<UserDto>> changePhone(Authentication authentication,@RequestBody @Valid ChangePhoneRequest request) {
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
+		SuccessDataResult<UserDto> result = new SuccessDataResult<UserDto>(
+				this.userService.changePhone(userId, request), "Telefon numarası güncellendi.");
+		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.OK);
 	}
 }

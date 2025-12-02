@@ -10,12 +10,13 @@ import {
     Stack,
     Button,
     Divider,
+    IconButton,
 } from "@mui/material";
 
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import { useNavigate } from "react-router-dom";
+import EditIcon from '@mui/icons-material/Edit';
 
 export default function AccountSettings() {
     const dispatch = useDispatch();
@@ -57,7 +58,13 @@ export default function AccountSettings() {
                                 <Typography variant="subtitle1" fontWeight={600}>
                                     Telefon:
                                 </Typography>
-                                <Typography variant="body1">{user.phone}</Typography>
+
+                                <Typography variant="body1">
+                                    <IconButton onClick={()=>navigate("/change-phone")}>
+                                        <EditIcon sx={{ color: "blue" }} />
+                                    </IconButton>
+                                    {user.phone}
+                                </Typography>
                             </Stack>
                         </Stack>
 
@@ -73,7 +80,7 @@ export default function AccountSettings() {
                                     py: 1.2,
                                     textTransform: "capitalize"
                                 }}
-                                onClick={()=>navigate("/change-email-adress")}
+                                onClick={() => navigate("/change-email-adress")}
                             >
                                 Email Adresini Değiştir
                             </Button>
@@ -87,23 +94,12 @@ export default function AccountSettings() {
                                     py: 1.2,
                                     textTransform: "capitalize"
                                 }}
-                                onClick={()=>navigate("/change-password")}
+                                onClick={() => navigate("/change-password")}
                             >
                                 Şifreni Değiştir
                             </Button>
 
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                fullWidth
-                                startIcon={<ManageAccountsIcon />}
-                                sx={{
-                                    py: 1.2,
-                                    textTransform: "capitalize"
-                                }}
-                            >
-                                Hesap Bilgilerini Değiştir
-                            </Button>
+
                         </Stack>
                     </CardContent>
                 </Card>

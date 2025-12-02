@@ -3,6 +3,7 @@ package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.enesdernek.proje_yonetim_sistemi.dto.ChangePhoneRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
@@ -45,6 +46,8 @@ public interface UserService {
 	public UserDto uploadProfileImageByUserId(Long userId, MultipartFile file);
 	
 	public UserDto deleteProfileImageByUserId(Long userId);
+	
+	public UserDto changePhone(Long userId,ChangePhoneRequest request);
 	
 
 }

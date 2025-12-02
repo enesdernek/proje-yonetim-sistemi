@@ -22,8 +22,7 @@ const validationSchema = yup.object({
     username: yup.string()
         .required("İsim bilgisi zorunludur")
         .min(2, "İsim en az 2 karakter içermelidir")
-        .max(32, "İsim 32 karakterden fazla olamaz")
-        .matches(/^[^\d]*$/, "İsim sayısal karakter içeremez"),
+        .max(32, "İsim 32 karakterden fazla olamaz"),
 
     email: yup.string().required("Email adresi zorunludur").email("Geçerli bir email adresi giriniz"),
 

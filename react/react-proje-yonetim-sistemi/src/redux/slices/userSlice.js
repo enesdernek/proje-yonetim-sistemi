@@ -295,6 +295,37 @@ export const deleteProfilePicture = createAsyncThunk(
     }
 );
 
+export const changePhoneNumber = createAsyncThunk(
+    "user/changePhoneNumber",
+    async ({ changePhoneRequest, token }, { rejectWithValue }) => {
+        try {
+
+            const response = await axios.put(
+                `${API_URL_USER}/change-phone`,changePhoneRequest,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            console.log(changePhoneRequest)
+            console.log(response.data)
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -498,6 +529,21 @@ export const userSlice = createSlice({
             state.loading = true
         })
         builder.addCase(deleteProfilePicture.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(changePhoneNumber.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+            state.user = action.payload.data;
+        })
+        builder.addCase(changePhoneNumber.pending, (state, action) => {
+            state.loading = true
+        })
+        builder.addCase(changePhoneNumber.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload;
             state.successMessage = null;

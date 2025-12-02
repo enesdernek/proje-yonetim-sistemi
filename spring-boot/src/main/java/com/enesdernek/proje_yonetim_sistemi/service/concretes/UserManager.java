@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.enesdernek.proje_yonetim_sistemi.dto.ChangePhoneRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordChangeRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.PasswordResetRequest;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
@@ -305,7 +306,7 @@ public class UserManager implements UserService {
 		emailChangeToken.setExpiryDate(expiryDate);
 
 		emailChangeTokenRepository.save(emailChangeToken);
-		
+
 		emailService.sendChangeEmailVerification(newEmail, user.getUsername(), token);
 	}
 
@@ -361,23 +362,30 @@ public class UserManager implements UserService {
 
 		return userMapper.toDto(user);
 	}
-	
+
 	@Override
 	public UserDto deleteProfileImageByUserId(Long userId) {
-	    User user = userRepository.findById(userId)
-	            .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+		User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
 
-	    String oldImageUrl = user.getProfileImageUrl();
-	    if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-	        String oldFileName = Paths.get(oldImageUrl).getFileName().toString();
-	        fileStorageManager.deleteFileIfExist("profile-images", oldFileName);
-	    }
+		String oldImageUrl = user.getProfileImageUrl();
+		if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+			String oldFileName = Paths.get(oldImageUrl).getFileName().toString();
+			fileStorageManager.deleteFileIfExist("profile-images", oldFileName);
+		}
 
-	    user.setProfileImageUrl(null);
-	    userRepository.save(user);
+		user.setProfileImageUrl(null);
+		userRepository.save(user);
 
-	    return userMapper.toDto(user);
+		return userMapper.toDto(user);
 	}
 
+	@Override
+	public UserDto changePhone(Long userId, ChangePhoneRequest request) {
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+		user.setPhone(request.getPhone());
+		User savedUser = this.userRepository.save(user);
+		return this.userMapper.toDto(savedUser);
+	}
 
 }
