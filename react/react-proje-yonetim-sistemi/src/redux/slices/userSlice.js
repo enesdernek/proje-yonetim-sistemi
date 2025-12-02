@@ -207,6 +207,94 @@ export const changeEmail = createAsyncThunk(
     }
 );
 
+export const changePassword = createAsyncThunk(
+    "user/changePassword",
+    async ({ changePasswordRequest, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_USER}/change-password`,
+                changePasswordRequest,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+export const uploadProfilePicture = createAsyncThunk(
+    "user/uploadProfilePicture",
+    async ({ file, token }, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+            formData.append("file", file); // backend @RequestParam("file")
+
+            const response = await axios.post(
+                `${API_URL_USER}/upload-profile-image`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+export const deleteProfilePicture = createAsyncThunk(
+    "user/deleteProfilePicture",
+    async ({  token }, { rejectWithValue }) => {
+        try {
+
+            const response = await axios.delete(
+                `${API_URL_USER}/delete-profile-image`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -364,6 +452,52 @@ export const userSlice = createSlice({
             state.loading = true
         })
         builder.addCase(changeEmail.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(changePassword.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+        })
+
+        builder.addCase(changePassword.pending, (state) => {
+            state.loading = true
+        })
+
+        builder.addCase(changePassword.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(uploadProfilePicture.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+            state.user = action.payload.data;
+        })
+        builder.addCase(uploadProfilePicture.pending, (state, action) => {
+            state.loading = true
+        })
+        builder.addCase(uploadProfilePicture.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload;
+            state.successMessage = null;
+        })
+
+        builder.addCase(deleteProfilePicture.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null;
+            state.successMessage = action.payload.message;
+            state.user = action.payload.data;
+        })
+        builder.addCase(deleteProfilePicture.pending, (state, action) => {
+            state.loading = true
+        })
+        builder.addCase(deleteProfilePicture.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload;
             state.successMessage = null;

@@ -87,6 +87,7 @@ export default function AccountSettings() {
                                     py: 1.2,
                                     textTransform: "capitalize"
                                 }}
+                                onClick={()=>navigate("/change-password")}
                             >
                                 Şifreni Değiştir
                             </Button>

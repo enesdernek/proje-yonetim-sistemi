@@ -52,7 +52,8 @@ public class SecurityConfig {
             .and()
             .csrf().disable()
             .authorizeRequests(request -> request
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS metodunu herkese aç
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()// OPTIONS metodunu herkese aç
                 .requestMatchers(PERMIT_ALL_ENDPOINTS).permitAll()
                 .anyRequest().authenticated()
             )

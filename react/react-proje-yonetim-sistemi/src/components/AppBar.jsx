@@ -8,10 +8,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import { Button } from '@mui/material';
+import { Avatar, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../redux/slices/userSlice';
+
+const API_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = API_URL.replace("/api", ""); // http://localhost:8080
 
 export default function MenuAppBar({ onMenuClick }) {
 
@@ -26,6 +29,7 @@ export default function MenuAppBar({ onMenuClick }) {
   const logOutFunc = () => {
     handleClose()
     dispatch(logOut())
+    navigate("/authenticate")
   }
 
 
@@ -81,7 +85,13 @@ export default function MenuAppBar({ onMenuClick }) {
                   onClick={handleMenu}
                   color="inherit"
                 >
-                  <AccountCircle />
+                  <Avatar
+                      src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : ""}
+                      alt={user.username}
+                      sx={{ width: 32, height: 32, fontSize: 48 }}
+                    >
+                      {user.username?.slice(0, 2).toUpperCase()}
+                    </Avatar>
                 </IconButton>
                 <Menu
                   id="menu-appbar"
