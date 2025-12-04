@@ -134,7 +134,7 @@ function Register() {
 
                     {/* İsim */}
                     <FormControl variant="standard">
-                        <InputLabel>İsim</InputLabel>
+                        <InputLabel>Kullanıcı Adı</InputLabel>
                         <Input
                             name="username"
                             value={formik.values.username}

@@ -35,5 +35,6 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
             "   OR (c.userId = :userId2 AND c.connectedUserId = :userId1)")
      boolean existsConnectionBetweenUsers(@Param("userId1") Long userId1,
                                           @Param("userId2") Long userId2);
+    
 
 }

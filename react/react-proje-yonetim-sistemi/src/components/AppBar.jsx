@@ -12,6 +12,7 @@ import { Avatar, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../redux/slices/userSlice';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BASE_URL = API_URL.replace("/api", ""); // http://localhost:8080
@@ -77,6 +78,13 @@ export default function MenuAppBar({ onMenuClick }) {
           {
             isAuthenticated ? (
               <div>
+                 <IconButton
+                  size="large"
+                  onClick={() => navigate("/search-user")}
+                  color="inherit"
+                >
+                  <PersonSearchIcon />
+                </IconButton>
                 <IconButton
                   size="large"
                   aria-label="account of current user"

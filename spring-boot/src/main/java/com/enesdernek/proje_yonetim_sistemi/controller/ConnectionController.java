@@ -22,6 +22,23 @@ public class ConnectionController {
 
 	@Autowired
 	private ConnectionService connectionService;
+	
+	@GetMapping("/is-connected")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<Boolean>> isConnected(
+	        @RequestParam Long otherUserId,
+	        Authentication authentication
+	) {
+	    User user = (User) authentication.getPrincipal();
+	    Long userId = user.getUserId();
+
+	    boolean isConnected = connectionService.isConnected(userId, otherUserId);
+
+	    SuccessDataResult<Boolean> result =
+	            new SuccessDataResult<>(isConnected, "Bağlantı durumu getirildi.");
+
+	    return ResponseEntity.ok(result);
+	}
 
 	@GetMapping("/get-connections-paged")
 	public ResponseEntity<SuccessDataResult<ConnectionDtoPagedResponse>> getAllUsersConnectionsPagedByConnectionIdDesc(

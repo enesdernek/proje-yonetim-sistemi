@@ -15,6 +15,8 @@ import ChangeEmailAdress from '../components/ChangeEmailAdress'
 import ChangeEmailAdressResponsePage from '../pages/ChangeEmailResponsePage'
 import ChangePassword from '../components/ChangePassword'
 import ChangePhonePage from '../components/ChangePhonePage'
+import SearchUserPage from '../components/SearchUserPage'
+import UsersProfile from '../components/UsersProfile'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -27,7 +29,9 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="account-settings" element={<AccountSettings />} />
         <Route path="change-email-adress" element={<ChangeEmailAdress />} />
         <Route path="change-password" element={<ChangePassword />} />
-        <Route path="change-phone" element={<ChangePhonePage />} />         
+        <Route path="change-phone" element={<ChangePhonePage />} />
+        <Route path="search-user" element={<SearchUserPage />} />
+        <Route path="users-profile/:userId" element={<UsersProfile />} />           
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />

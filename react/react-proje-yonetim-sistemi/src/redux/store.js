@@ -3,11 +3,14 @@ import appSlice from './slices/appSlice'
 import { persistStore, persistReducer } from "redux-persist"
 import storage from "redux-persist/lib/storage"
 import  userSlice  from './slices/userSlice'
+import  connectionSlice  from './slices/connectionSlice'
+
 
 
 const rootReducer = combineReducers({
     app: appSlice,
-    user:userSlice
+    user:userSlice,
+    connection: connectionSlice,
 })
 
 

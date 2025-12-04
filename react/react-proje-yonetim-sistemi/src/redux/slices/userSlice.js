@@ -3,6 +3,8 @@ import axios from "axios"
 
 const initialState = {
     user: null,
+    viewedUser: null,
+    userList: [],
     token: null,
     isAuthenticated: false,
     loading: false,
@@ -269,7 +271,7 @@ export const uploadProfilePicture = createAsyncThunk(
 
 export const deleteProfilePicture = createAsyncThunk(
     "user/deleteProfilePicture",
-    async ({  token }, { rejectWithValue }) => {
+    async ({ token }, { rejectWithValue }) => {
         try {
 
             const response = await axios.delete(
@@ -301,7 +303,7 @@ export const changePhoneNumber = createAsyncThunk(
         try {
 
             const response = await axios.put(
-                `${API_URL_USER}/change-phone`,changePhoneRequest,
+                `${API_URL_USER}/change-phone`, changePhoneRequest,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -326,6 +328,65 @@ export const changePhoneNumber = createAsyncThunk(
     }
 );
 
+export const searchUser = createAsyncThunk(
+    "user/searchUser",
+    async ({ searchInput, token }, { rejectWithValue }) => {
+        try {
+
+
+            const response = await axios.get(
+                `${API_URL_USER}/search-user`,
+                {
+                    params: { searchInput },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success === false) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+export const getUserByUserId = createAsyncThunk(
+    "user/getUserByUserId",
+    async ({ userId, token }, { rejectWithValue }) => {
+        try {
+
+
+            const response = await axios.get(
+                `${API_URL_USER}/get-by-user-id`,
+                {
+                    params: { userId },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success === false) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -341,6 +402,9 @@ export const userSlice = createSlice({
         },
         clearSuccessMessage: (state) => {
             state.successMessage = null
+        },
+        clearUserList: (state) => {
+            state.userList = []
         }
 
     },
@@ -548,10 +612,46 @@ export const userSlice = createSlice({
             state.error = action.payload;
             state.successMessage = null;
         })
+        builder.addCase(searchUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            state.userList = action.payload.data.userDtos;
+            state.successMessage = action.payload.message;
+        });
+
+        builder.addCase(searchUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.successMessage = null;
+        });
+
+        builder.addCase(searchUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+            state.userList = [];
+        });
+
+        builder.addCase(getUserByUserId.pending, (state, action) => {
+            state.loading = true;
+            state.error = null;
+            state.successMessage = null;
+        });
+
+        builder.addCase(getUserByUserId.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            state.viewedUser = action.payload.data;
+            state.successMessage = action.payload.message;
+        });
+
+        builder.addCase(getUserByUserId.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        });
 
     }
 })
 
-export const { logOut, clearMessage, clearSuccessMessage } = userSlice.actions
+export const { logOut, clearMessage, clearSuccessMessage, clearUserList } = userSlice.actions
 
 export default userSlice.reducer

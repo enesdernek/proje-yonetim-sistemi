@@ -1,6 +1,7 @@
 package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
 
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.ChangePhoneRequest;
@@ -48,6 +49,10 @@ public interface UserService {
 	public UserDto deleteProfileImageByUserId(Long userId);
 	
 	public UserDto changePhone(Long userId,ChangePhoneRequest request);
+	
+	public UserDtoPagedResponse searchUsersUsernameContains(String searchInput);
+	
+	public UserDto getUserByUserId(Long userId);
 	
 
 }

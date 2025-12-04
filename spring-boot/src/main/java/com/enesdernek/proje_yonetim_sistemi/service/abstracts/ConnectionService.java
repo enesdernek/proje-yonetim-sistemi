@@ -7,5 +7,8 @@ public interface ConnectionService {
 	public ConnectionDtoPagedResponse getAllUsersConnectionsPagedByConnectionIdDesc(Long userId,int pageNo,int pageSize);
 	
 	public void deleteConnection(Long authUserId, Long otherUserId);
+	
+	boolean isConnected(Long userId, Long otherUserId);
+
 
 }

@@ -86,5 +86,11 @@ public class ConnectionManager implements ConnectionService {
 	        connectionRepository.delete(connection);
 	    }
 
+	 @Override
+	    public boolean isConnected(Long userId, Long otherUserId) {
+	        return connectionRepository.existsByUserIdAndConnectedUserId(userId, otherUserId)
+	                || connectionRepository.existsByUserIdAndConnectedUserId(otherUserId, userId);
+	    }
+
 
 }

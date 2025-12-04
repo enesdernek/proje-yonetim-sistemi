@@ -14,8 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -386,6 +388,30 @@ public class UserManager implements UserService {
 		user.setPhone(request.getPhone());
 		User savedUser = this.userRepository.save(user);
 		return this.userMapper.toDto(savedUser);
+	}
+
+	@Override
+	public UserDtoPagedResponse searchUsersUsernameContains(String searchInput) {
+
+		Pageable pageable = PageRequest.of(0, 10, Sort.by("username").ascending());
+
+		Page<User> pageResult = userRepository.findByUsernameContainingIgnoreCase(searchInput, pageable);
+
+		UserDtoPagedResponse response = new UserDtoPagedResponse();
+
+		response.setTotalElements(pageResult.getTotalElements());
+		response.setTotalPages(pageResult.getTotalPages());
+
+		List<UserDto> dtoList = userMapper.toDtoList(pageResult.getContent());
+		response.setUserDtos(dtoList);
+
+		return response;
+	}
+
+	@Override
+	public UserDto getUserByUserId(Long userId) {
+		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
+		return this.userMapper.toDto(user);
 	}
 
 }

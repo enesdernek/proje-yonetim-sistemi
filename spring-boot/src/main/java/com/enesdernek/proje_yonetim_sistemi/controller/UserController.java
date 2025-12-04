@@ -189,4 +189,21 @@ public class UserController {
 				this.userService.changePhone(userId, request), "Telefon numarası güncellendi.");
 		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.OK);
 	}
+	
+	@GetMapping("/search-user")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<UserDtoPagedResponse>> searchUsersUsernameContains(@RequestParam String searchInput) {
+		SuccessDataResult<UserDtoPagedResponse> result = new SuccessDataResult<UserDtoPagedResponse>(
+				this.userService.searchUsersUsernameContains(searchInput), "Kullanıcılar getirildi.");
+		
+		return new ResponseEntity<SuccessDataResult<UserDtoPagedResponse>>(result, HttpStatus.OK);
+	}
+	
+	@GetMapping("/get-by-user-id")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<UserDto>> getUserByUserId(@RequestParam Long userId) {
+		SuccessDataResult<UserDto> result = new SuccessDataResult<UserDto>(
+				this.userService.getUserByUserId(userId), "Kullanıcı getirildi.");
+		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.OK);
+	}
 }
