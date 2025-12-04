@@ -53,11 +53,11 @@ public class ConnectionRequestManager implements ConnectionRequestService {
 			throw new InvalidConnectionException("Kullanıcı kendisine bağlantı isteği gönderemez.");
 		}
 
-		boolean isAlreadyConnected = this.connectionRepository.existsByUserIdAndConnectedUserId(userId,
-				connectionRequestDtoIU.getReceiverId());
+		boolean isAlreadyConnected = this.connectionRepository.existsByUserIdAndConnectedUserId(userId, connectionRequestDtoIU.getReceiverId())
+		        || this.connectionRepository.existsByUserIdAndConnectedUserId(connectionRequestDtoIU.getReceiverId(), userId);
 
 		if (isAlreadyConnected) {
-			throw new AlreadyConnectedException("Zaten bu kullanıcı ile bağlantı kurulmuş");
+		    throw new AlreadyConnectedException("Zaten bu kullanıcı ile bağlantı kurulmuş");
 		}
 
 		boolean exists = connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(userId,
@@ -235,18 +235,12 @@ public class ConnectionRequestManager implements ConnectionRequestService {
 				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
 		ConnectionRequest request = this.connectionRequestRepository.findById(requestId)
 				.orElseThrow(() -> new NotFoundException("İstek bulunamadı."));
+		
 
-		if (request.getSenderId() != userId) {
-			throw new UnauthorizedActionException("İsteği giriş yapmış kullanıcı atmamış.");
+		if (!request.getSenderId().equals(userId)) {
+		    throw new UnauthorizedActionException("İsteği giriş yapmış kullanıcı atmamış.");
 		}
 
-		if (request.getStatus() == ConnectionRequestStatus.APPROVED) {
-			throw new UnauthorizedActionException("İstek önceden kabul edilmiş.");
-		}
-
-		if (request.getStatus() == ConnectionRequestStatus.REJECTED) {
-			throw new UnauthorizedActionException("İstek önceden reddedilmiş.");
-		}
 
 		this.connectionRequestRepository.delete(request);
 

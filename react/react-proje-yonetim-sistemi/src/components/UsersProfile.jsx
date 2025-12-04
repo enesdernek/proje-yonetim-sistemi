@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 
 import { getUserByUserId } from "../redux/slices/userSlice";
-import { isConnected } from "../redux/slices/connectionSlice";
+import { isConnected, deleteConnection } from "../redux/slices/connectionSlice";
+import { createConnectionRequest, deleteConnectionRequest } from "../redux/slices/connectionRequestSlice";
 
 function UsersProfile() {
     const { userId } = useParams();
@@ -24,23 +25,58 @@ function UsersProfile() {
     const viewedUser = useSelector((state) => state.user.viewedUser);
     const loading = useSelector((state) => state.user.loading);
     const error = useSelector((state) => state.user.error);
+    const user = useSelector((state) => state.user.user);
 
     const isConnectedMap = useSelector((state) => state.connection.isConnectedMap);
     const connectionLoading = useSelector((state) => state.connection.loading);
 
-    const isConn = isConnectedMap[userId]; // bağlantı durumu
+    const sendedRequests = useSelector((state) => state.connectionRequest.sendedConnectionRequests);
+    const requestLoading = useSelector((state) => state.connectionRequest.loading);
+
+    const isConn = isConnectedMap[userId];
+
+    // Pending request backend state'e göre belirleniyor
+    const pendingRequestFromStore = sendedRequests.find(
+        (req) => req.receiverId === Number(userId) && req.status === "PENDING"
+    );
+
+    const [localPending, setLocalPending] = useState(false);
 
     useEffect(() => {
         if (userId && token) {
             dispatch(getUserByUserId({ userId, token }));
+            dispatch(isConnected({ otherUserId: userId, token }));
         }
     }, [userId, token]);
 
     useEffect(() => {
-        if (userId && token) {
-            dispatch(isConnected({ otherUserId: userId, token }));
-        }
-    }, [userId, token]);
+        setLocalPending(!!pendingRequestFromStore); // sadece backend'de PENDING varsa true
+    }, [pendingRequestFromStore]);
+
+    const handleConnect = () => {
+        if (!token || !userId) return;
+
+        const connectionRequestDtoIU = { receiverId: Number(userId) };
+        dispatch(createConnectionRequest({ token, connectionRequestDtoIU }));
+    };
+
+    const handleDeleteRequest = () => {
+        if (!token || !pendingRequestFromStore) return;
+
+        dispatch(deleteConnectionRequest({ token, requestId: pendingRequestFromStore.requestId }))
+            .unwrap()
+            .catch((err) => {
+                if (err === "İstek önceden kabul edilmiş" || err === "İstek önceden reddedilmiş") {
+                    // UI'yi approved/rejected duruma göre güncelle
+                    setLocalPending(false);
+                }
+            });
+    };
+
+    const handleRemoveConnection = () => {
+        if (!token || !userId) return;
+        dispatch(deleteConnection({ otherUserId: Number(userId), token }));
+    };
 
     if (loading) {
         return (
@@ -66,12 +102,12 @@ function UsersProfile() {
         );
     }
 
+    const isOwnProfile = user?.userId === viewedUser.userId;
+
     return (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 5, px: 2 }}>
             <Card sx={{ width: "100%", maxWidth: 420, p: 2, borderRadius: 3 }}>
                 <CardContent>
-
-                    {/* Avatar */}
                     <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                         <Avatar
                             src={viewedUser.profileImageUrl || ""}
@@ -92,7 +128,6 @@ function UsersProfile() {
 
                     <Divider sx={{ my: 2 }} />
 
-                    {/* Bilgiler */}
                     <Stack spacing={1.5} sx={{ mb: 3 }}>
                         <Box>
                             <Typography fontWeight="600">Email</Typography>
@@ -107,43 +142,48 @@ function UsersProfile() {
                         </Box>
                     </Stack>
 
-                    {/* Bağlantı Durumu */}
-                    <Box sx={{ textAlign: "center" }}>
-                        {connectionLoading ? (
-                            <CircularProgress size={28} />
-
-                        ) : isConn === true ? (
-                            <Stack direction="row" spacing={2} justifyContent="center">
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    disabled
-                                    sx={{
-                                        backgroundColor: (theme) => theme.palette.success.main + " !important",
-                                        color: "#fff !important",
-                                        opacity: 0.6, // disable efekti
-                                    }}
-                                >
-                                    Bağlantı Var
+                    {!isOwnProfile && (
+                        <Box sx={{ textAlign: "center" }}>
+                            {(connectionLoading || requestLoading) ? (
+                                <CircularProgress size={28} />
+                            ) : isConn === true ? (
+                                <Stack direction="row" spacing={2} justifyContent="center">
+                                    <Button variant="contained" color="success" disabled sx={{ opacity: 0.6 }}>
+                                        Bağlantı Var
+                                    </Button>
+                                    <Button variant="contained" color="error" onClick={handleRemoveConnection}>
+                                        Bağlantıyı Kaldır
+                                    </Button>
+                                </Stack>
+                            ) : localPending ? (
+                                <Stack direction="row" spacing={2} justifyContent="center">
+                                    <Button
+                                        disabled
+                                        variant="contained"
+                                        sx={{
+                                            backgroundColor: (theme) => theme.palette.success.main + " !important",
+                                            color: "#fff !important",
+                                            opacity: 0.7,
+                                        }}
+                                    >
+                                        İstek Gönderildi
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={handleDeleteRequest}
+                                        disabled={!pendingRequestFromStore} // sadece PENDING istek
+                                    >
+                                        İsteği İptal Et
+                                    </Button>
+                                </Stack>
+                            ) : (
+                                <Button variant="contained" color="primary" onClick={handleConnect}>
+                                    Bağlantı Kur
                                 </Button>
-
-                                <Button variant="contained" color="error">
-                                    Bağlantıyı Kaldır
-                                </Button>
-                            </Stack>
-
-                        ) : isConn === false ? (
-                            <Button variant="contained" color="primary">
-                                Bağlantı Kur
-                            </Button>
-
-                        ) : (
-                            <Button variant="contained" disabled>
-                                Kontrol Ediliyor...
-                            </Button>
-                        )}
-                    </Box>
-
+                            )}
+                        </Box>
+                    )}
                 </CardContent>
             </Card>
         </Box>

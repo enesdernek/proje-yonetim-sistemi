@@ -9,11 +9,11 @@ import {
     Button,
     Divider,
 } from "@mui/material";
-
 import SearchIcon from "@mui/icons-material/Search";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUserList, searchUser } from "../redux/slices/userSlice";
-import { isConnected } from "../redux/slices/connectionSlice";
+import { isConnected, deleteConnection } from "../redux/slices/connectionSlice";
+import { createConnectionRequest, deleteConnectionRequest } from "../redux/slices/connectionRequestSlice";
 import { useNavigate } from "react-router-dom";
 
 function SearchUserPage() {
@@ -23,7 +23,11 @@ function SearchUserPage() {
 
     const userList = useSelector((state) => state.user?.userList || []);
     const token = useSelector((state) => state.user.token);
-    const isConnectedMap = useSelector(state => state.connection.isConnectedMap) || {};
+    const isConnectedMap = useSelector((state) => state.connection.isConnectedMap) || {};
+    const connectionLoading = useSelector((state) => state.connection.loading);
+    const requestLoading = useSelector((state) => state.connectionRequest.loading);
+    const sendedRequests = useSelector((state) => state.connectionRequest.sendedConnectionRequests);
+    const authUserId = useSelector((state) => state.user.user?.userId);
 
     const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
@@ -38,11 +42,11 @@ function SearchUserPage() {
                 dispatch(isConnected({ otherUserId: u.userId, token }));
             });
         }
-    }, [userList]);
+    }, [userList, token, dispatch]);
 
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(clearUserList());
-    },[navigate])
+    }, [navigate, dispatch]);
 
     return (
         <Box sx={{ maxWidth: 700, mx: "auto", mt: 4, p: 2 }}>
@@ -73,78 +77,94 @@ function SearchUserPage() {
             <Divider sx={{ my: 3 }} />
 
             {/* Liste */}
-            {userList.length === 0 ? (
+            {userList.filter(user => user.userId !== authUserId).length === 0 ? (
                 <Typography sx={{ mt: 2, color: "gray" }}>
                     Arama sonucu bulunamadı.
                 </Typography>
             ) : (
                 <Stack spacing={2}>
-                    {userList.map((user) => {
-                        const isConn = isConnectedMap[user.userId];
+                    {userList
+                        .filter((user) => user.userId !== authUserId)
+                        .map((user) => {
+                            const isConn = isConnectedMap[user.userId];
+                            const pendingRequest = sendedRequests.find(req => req.receiverId === user.userId);
+                            const showPending = pendingRequest && !isConn; // pending yalnızca bağlantı yoksa
 
-                        return (
-                            <Card key={user.userId} sx={{ p: 2 }}>
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    <Avatar
-                                        src={
-                                            user.profileImageUrl
-                                                ? BASE_URL + user.profileImageUrl
-                                                : undefined
-                                        }
-                                        alt={user.username}
-                                        sx={{ width: 48, height: 48, fontSize: 26 }}
-                                    >
-                                        {user.username?.slice(0, 2)?.toUpperCase()}
-                                    </Avatar>
-
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                            {user.username}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {user.email}
-                                        </Typography>
-                                    </Box>
-
-                                    {/* Profile Git */}
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => navigate(`/users-profile/${user.userId}`)}
-                                    >
-                                        Profile Bak
-                                    </Button>
-
-                                    {/* Bağlantı Durumu */}
-                                    {isConn === undefined ? (
-                                        <Button variant="contained" disabled>
-                                            Kontrol ediliyor...
-                                        </Button>
-                                    ) : isConn ? (
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            disabled
-                                            sx={{
-                                                backgroundColor: (theme) => theme.palette.success.main + " !important",
-                                                color: "#fff !important",
-                                                opacity: 0.6, // disable efekti
-                                            }}
+                            return (
+                                <Card key={user.userId} sx={{ p: 2 }}>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Avatar
+                                            src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : undefined}
+                                            alt={user.username}
+                                            sx={{ width: 48, height: 48, fontSize: 26, cursor: 'pointer' }}
+                                            onClick={() => navigate(`/users-profile/${user.userId}`)}
                                         >
-                                            Bağlantı Var
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => alert("Bağlantı isteği gönderildi!")}
+                                            {user.username?.slice(0, 2)?.toUpperCase()}
+                                        </Avatar>
+
+                                        <Box
+                                            sx={{ flexGrow: 1, cursor: 'pointer' }}
+                                            onClick={() => navigate(`/users-profile/${user.userId}`)}
                                         >
-                                            Bağlantı Kur
-                                        </Button>
-                                    )}
-                                </Stack>
-                            </Card>
-                        );
-                    })}
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                {user.username}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {user.email}
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Bağlantı Durumu */}
+                                        {(connectionLoading || requestLoading) ? (
+                                            <Button variant="contained" disabled>
+                                                Yükleniyor...
+                                            </Button>
+                                        ) : isConn ? (
+                                            <Button
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => dispatch(deleteConnection({ otherUserId: user.userId, token }))}
+                                            >
+                                                Bağlantıyı Kaldır
+                                            </Button>
+                                        ) : showPending ? (
+                                            <Stack direction="row" spacing={1}>
+                                                <Button
+                                                    disabled
+                                                    variant="contained"
+                                                    sx={{
+                                                        backgroundColor: (theme) => theme.palette.success.main + " !important",
+                                                        color: "#fff !important",
+                                                        opacity: 0.7,
+                                                    }}
+                                                >
+                                                    İstek Gönderildi
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        dispatch(deleteConnectionRequest({ token, requestId: pendingRequest.requestId }))
+                                                    }
+                                                >
+                                                    İsteği İptal Et
+                                                </Button>
+                                            </Stack>
+                                        ) : (
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() =>
+                                                    dispatch(createConnectionRequest({ token, connectionRequestDtoIU: { receiverId: user.userId } }))
+                                                }
+                                            >
+                                                Bağlantı Kur
+                                            </Button>
+                                        )}
+                                    </Stack>
+                                </Card>
+                            );
+                        })}
                 </Stack>
             )}
         </Box>

@@ -18,6 +18,7 @@ import ChangePhonePage from '../components/ChangePhonePage'
 import SearchUserPage from '../components/SearchUserPage'
 import UsersProfile from '../components/UsersProfile'
 import ConnectionRequestPage from '../components/ConnectionRequestPage'
+import Connections from '../components/Connections'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -25,15 +26,16 @@ function MainContent({ drawerOpen, toggleDrawer }) {
 
     <Routes>
       <Route path="/" element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}>
-        <Route index element={<StartPage />} />  
+        <Route index element={<StartPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="account-settings" element={<AccountSettings />} />
         <Route path="change-email-adress" element={<ChangeEmailAdress />} />
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="change-phone" element={<ChangePhonePage />} />
         <Route path="search-user" element={<SearchUserPage />} />
-        <Route path="users-profile/:userId" element={<UsersProfile />} /> 
-        <Route path="connection-requests" element={<ConnectionRequestPage />} />           
+        <Route path="users-profile/:userId" element={<UsersProfile />} />
+        <Route path="connection-requests" element={<ConnectionRequestPage />} />
+        <Route path="connections" element={<Connections />} />
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />

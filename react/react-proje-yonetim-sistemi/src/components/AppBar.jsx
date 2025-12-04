@@ -59,6 +59,14 @@ export default function MenuAppBar({ onMenuClick }) {
     navigate("/account-settings");
   }
 
+  const connectionRequests = useSelector(
+    (state) => state.connectionRequest.recievedConnectionRequests || []
+  );
+
+  const pendingRequestCount = connectionRequests.filter(
+    (req) => req.status === "PENDING"
+  ).length;
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" >
@@ -85,7 +93,7 @@ export default function MenuAppBar({ onMenuClick }) {
                   onClick={() => navigate("/connection-requests")}
                   color="inherit"
                 >
-                  <Badge badgeContent={3} color="error">
+                  <Badge badgeContent={pendingRequestCount} color="error">
                     <PersonAddIcon />
                   </Badge>
                 </IconButton>

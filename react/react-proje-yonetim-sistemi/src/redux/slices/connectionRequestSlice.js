@@ -22,7 +22,7 @@ export const getUsersRecievedConnectionRequests = createAsyncThunk(
       }
 
       return response.data;
-      
+
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Bir hata oluştu");
     }
@@ -60,12 +60,87 @@ export const rejectConnectionRequest = createAsyncThunk(
       if (!response.data.success) {
         return rejectWithValue(response.data.message);
       }
-      return response.data.data; 
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Bir hata oluştu");
     }
   }
 );
+
+export const getUsersSendedConnectionRequests = createAsyncThunk(
+  "connectionRequest/getUsersSendedConnectionRequests",
+  async ({ token, pageNo, pageSize }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_URL_CONNECTION_REQUESTS}/get-all-users-sended-connection-requests-paged?pageNo=${pageNo}&pageSize=${pageSize}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.data.success) {
+        return rejectWithValue(response.data.message);
+      }
+
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Bir hata oluştu");
+    }
+  }
+);
+
+export const deleteConnectionRequest = createAsyncThunk(
+  "connectionRequest/deleteConnectionRequest",
+  async ({ token, requestId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL_CONNECTION_REQUESTS}/delete?requestId=${requestId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log(response.data)
+
+      if (!response.data.success) {
+        return rejectWithValue(response.data.message);
+      }
+
+      return requestId;
+
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Bağlantı isteği silinirken bir hata oluştu");
+    }
+  }
+);
+
+export const createConnectionRequest = createAsyncThunk(
+  "connectionRequest/createConnectionRequest",
+  async ({ token, connectionRequestDtoIU }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL_CONNECTION_REQUESTS}/create`,
+        connectionRequestDtoIU,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        return rejectWithValue(response.data.message);
+      }
+
+      return response.data.data; // created ConnectionRequestDto
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Bağlantı isteği gönderilirken bir hata oluştu"
+      );
+    }
+  }
+);
+
 
 
 const initialState = {
@@ -149,13 +224,74 @@ export const connectionRequestSlice = createSlice({
 
         state.recievedConnectionRequests = state.recievedConnectionRequests.map(req =>
           req.requestId === updatedRequest.requestId
-            ? { ...req, status: updatedRequest.status } 
+            ? { ...req, status: updatedRequest.status }
             : req
         );
       })
       .addCase(rejectConnectionRequest.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Bağlantı isteği reddedilirken bir hata oluştu";
+      })
+      .addCase(getUsersSendedConnectionRequests.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUsersSendedConnectionRequests.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const { requestDtos, totalElements, totalPages } = action.payload.data;
+
+        state.sendedConnectionRequests = requestDtos;
+
+        state.sentPagination = {
+          pageNo: action.meta.arg.pageNo,
+          pageSize: action.meta.arg.pageSize,
+          totalElements,
+          totalPages,
+        };
+      })
+      .addCase(getUsersSendedConnectionRequests.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Bir hata oluştu";
+      })
+
+      .addCase(deleteConnectionRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteConnectionRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        const requestId = action.payload;
+
+        state.recievedConnectionRequests = state.recievedConnectionRequests.filter(req => req.requestId !== requestId);
+        state.sendedConnectionRequests = state.sendedConnectionRequests.filter(req => req.requestId !== requestId);
+      })
+    builder.addCase(deleteConnectionRequest.rejected, (state, action) => {
+      state.loading = false;
+      
+
+      if (action.payload === "İstek önceden kabul edilmiş") {
+        state.sendedConnectionRequests = state.sendedConnectionRequests.filter(
+          req => req.receiverId !== action.meta.arg.receiverId
+        );
+      } else {
+        state.error = action.payload || "Bağlantı isteği silinirken bir hata oluştu";
+      }
+    })
+      .addCase(createConnectionRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(createConnectionRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        const newRequest = action.payload;
+        state.sendedConnectionRequests.unshift(newRequest); // gönderilen isteklere ekle
+        state.successMessage = "Bağlantı isteği gönderildi.";
+      })
+      .addCase(createConnectionRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Bağlantı isteği gönderilirken bir hata oluştu";
       });
   },
 })

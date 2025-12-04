@@ -21,8 +21,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   getUsersRecievedConnectionRequests,
+  getUsersSendedConnectionRequests,
   acceptConnectionRequest,
-  rejectConnectionRequest
+  rejectConnectionRequest,
+  deleteConnectionRequest
 } from "../redux/slices/connectionRequestSlice";
 
 const PAGE_SIZE = 10;
@@ -38,7 +40,9 @@ function ConnectionRequestPage() {
 
   const {
     recievedConnectionRequests = [],
+    sendedConnectionRequests = [],
     receivedPagination = { pageNo: 0, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 0 },
+    sentPagination = { pageNo: 0, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 0 },
     loading = false
   } = useSelector((state) => state.connectionRequest || {});
 
@@ -46,9 +50,18 @@ function ConnectionRequestPage() {
   const token = userState.token || userState.user?.token || null;
 
   useEffect(() => {
-    if (tab === 0 && token) {
+    if (!token) return;
+    if (tab === 0) {
       dispatch(
         getUsersRecievedConnectionRequests({
+          token,
+          pageNo: page,
+          pageSize: PAGE_SIZE
+        })
+      );
+    } else if (tab === 1) {
+      dispatch(
+        getUsersSendedConnectionRequests({
           token,
           pageNo: page,
           pageSize: PAGE_SIZE
@@ -72,12 +85,34 @@ function ConnectionRequestPage() {
     dispatch(rejectConnectionRequest({ token, requestId }));
   };
 
+  const handleDelete = (requestId) => {
+    if (!token) return;
+    dispatch(deleteConnectionRequest({ token, requestId }));
+  };
+
   const handleUserClick = (userId) => {
     navigate(`/users-profile/${userId}`);
   };
 
-  const totalPages = Number(receivedPagination.totalPages) || 0;
-  const totalElements = Number(receivedPagination.totalElements) || 0;
+  const timeAgo = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffMs = now - past;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return `${diffSec} saniye önce`;
+    if (diffMin < 60) return `${diffMin} dakika önce`;
+    if (diffHour < 24) return `${diffHour} saat önce`;
+    return `${diffDay} gün önce`;
+  };
+
+  const currentRequests = tab === 0 ? recievedConnectionRequests : sendedConnectionRequests;
+  const currentPagination = tab === 0 ? receivedPagination : sentPagination;
+  const totalPages = Number(currentPagination.totalPages) || 0;
+  const totalElements = Number(currentPagination.totalElements) || 0;
 
   return (
     <Box sx={{ p: 3 }}>
@@ -90,135 +125,125 @@ function ConnectionRequestPage() {
         <Tab label="Gönderilen İstekler" />
       </Tabs>
 
-      {tab === 0 && (
-        <Box>
-          {loading ? (
-            <Box sx={{ textAlign: "center", mt: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : (recievedConnectionRequests?.length ?? 0) === 0 ? (
-            <Typography color="text.secondary">Henüz bağlantı isteği yok.</Typography>
-          ) : (
-            recievedConnectionRequests.map((req) => {
-              const avatarUrl = req.sendersProfileImageUrl
-                ? BASE_URL + req.sendersProfileImageUrl
-                : undefined;
+      {loading ? (
+        <Box sx={{ textAlign: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : currentRequests.length === 0 ? (
+        <Typography color="text.secondary">Henüz bağlantı isteği yok.</Typography>
+      ) : (
+        currentRequests.map((req) => {
+          const isReceived = tab === 0;
+          const userId = isReceived ? req.senderId : req.receiverId;
+          const username = isReceived ? req.sendersUsername : req.recieversUsername;
+          const avatarUrl = isReceived ? req.sendersProfileImageUrl : req.recieversProfileImageUrl;
+          const status = req.status;
 
-              return (
-                <Card key={req.requestId} sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box
-                        onClick={() => handleUserClick(req.senderId)}
-                        sx={{ display: "flex", alignItems: "center", cursor: "pointer", flexGrow: 1 }}
-                      >
-                        <Avatar src={avatarUrl} sx={{ mr: 1 }}>
-                          {req.sendersUsername?.slice(0, 2).toUpperCase()}
-                        </Avatar>
-                        <Box>
-                          <Typography fontWeight={600}>{req.sendersUsername}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {`Gönderildi: ${new Date(req.createdAt).toLocaleString()}`}
-                          </Typography>
-                        </Box>
-                      </Box>
+          return (
+            <Card key={req.requestId} sx={{ mb: 2 }}>
+              <CardContent>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    onClick={() => handleUserClick(userId)}
+                    sx={{ display: "flex", alignItems: "center", cursor: "pointer", flexGrow: 1 }}
+                  >
+                    <Avatar src={avatarUrl ? BASE_URL + avatarUrl : undefined} sx={{ mr: 1 }}>
+                      {username?.slice(0, 2).toUpperCase()}
+                    </Avatar>
+                    <Box>
+                      <Typography fontWeight={600}>{username}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {`Gönderildi: ${timeAgo(req.createdAt)}`}
+                      </Typography>
+                    </Box>
+                  </Box>
 
+                  {isReceived ? (
+                    status === "PENDING" ? (
                       <Stack direction="row" spacing={1}>
-                        {req.status === "PENDING" ? (
-                          <>
-                            <Button
-                              variant="contained"
-                              color="success"
-                              startIcon={<CheckIcon />}
-                              onClick={() => handleAccept(req.requestId)}
-                            >
-                              Kabul Et
-                            </Button>
+                        <Button
+                          variant="contained"
+                          color="success"
+                          startIcon={<CheckIcon />}
+                          onClick={() => handleAccept(req.requestId)}
+                        >
+                          Kabul Et
+                        </Button>
 
-                            <Button
-                              variant="contained"
-                              color="error"
-                              startIcon={<CloseIcon />}
-                              onClick={() => handleReject(req.requestId)}
-                            >
-                              Reddet
-                            </Button>
-                          </>
-                        ) : (
-                          <Typography
-                            sx={{
-                              px: 2,
-                              py: 1,
-                              borderRadius: 1,
-                              fontWeight: 600,
-                              color:
-                                req.status === "APPROVED"
-                                  ? "success.main"
-                                  : "error.main",
-                              border:
-                                req.status === "APPROVED"
-                                  ? "1px solid green"
-                                  : "1px solid red",
-                            }}
-                          >
-                            {req.status === "APPROVED" ? "Kabul Edildi" : "Reddedildi"}
-                          </Typography>
-                        )}
+                        <Button
+                          variant="contained"
+                          color="error"
+                          startIcon={<CloseIcon />}
+                          onClick={() => handleReject(req.requestId)}
+                        >
+                          Reddet
+                        </Button>
                       </Stack>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+                    ) : (
+                      <Typography
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 1,
+                          fontWeight: 600,
+                          color: status === "APPROVED" ? "success.main" : "error.main",
+                          border: status === "APPROVED" ? "1px solid green" : "1px solid red",
+                        }}
+                      >
+                        {status === "APPROVED" ? "Kabul Edildi" : "Reddedildi"}
+                      </Typography>
+                    )
+                  ) : (
+                    status === "PENDING" ? (
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDelete(req.requestId)}
+                      >
+                        İptal Et
+                      </Button>
+                    ) : (
+                      <Typography
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 1,
+                          fontWeight: 600,
+                          color: status === "APPROVED" ? "success.main" : "error.main",
+                          border: status === "APPROVED" ? "1px solid green" : "1px solid red",
+                        }}
+                      >
+                        {status === "APPROVED" ? "Kabul Edildi" : "Reddedildi"}
+                      </Typography>
+                    )
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
 
-          {totalPages > 1 && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(e, v) => setPage(v)}
-                color="primary"
-              />
-            </Box>
-          )}
-
-          {totalElements > 0 && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", mt: 1, textAlign: "center" }}
-            >
-              Toplam: {totalElements}
-            </Typography>
-          )}
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(e, v) => setPage(v)}
+            color="primary"
+          />
         </Box>
       )}
 
-      {tab === 1 && (
-        <Box>
-          <Card sx={{ mb: 2 }}>
-            <CardContent>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar />
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography fontWeight={600}>Kullanıcı Adı</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Placeholder gönderilen istek
-                  </Typography>
-                </Box>
-
-                <Button variant="contained" color="error" startIcon={<DeleteIcon />}>
-                  İptal Et
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-            <Pagination count={5} color="primary" />
-          </Box>
-        </Box>
+      {totalElements > 0 && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mt: 1, textAlign: "center" }}
+        >
+          Toplam: {totalElements}
+        </Typography>
       )}
     </Box>
   );
