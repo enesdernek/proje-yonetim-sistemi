@@ -76,8 +76,8 @@ public class ConnectionRequestController {
 	
 	@GetMapping("/get-all-users-received-connection-requests-paged")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<ConnectionRequestDtoPagedResponse>> getAllUsersReceivedConnectionRequestsPaged( int pageNo,
-			int pageSize,Authentication authentication) {
+	public ResponseEntity<SuccessDataResult<ConnectionRequestDtoPagedResponse>> getAllUsersReceivedConnectionRequestsPaged(@RequestParam int pageNo,
+			@RequestParam int pageSize,Authentication authentication) {
 		User user = (User)authentication.getPrincipal();
 		Long userId = user.getUserId();
 		

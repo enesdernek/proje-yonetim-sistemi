@@ -2,9 +2,11 @@ package com.enesdernek.proje_yonetim_sistemi.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.enesdernek.proje_yonetim_sistemi.entity.ConnectionRequest;
@@ -20,8 +22,15 @@ public interface ConnectionRequestRepository extends JpaRepository<ConnectionReq
     @Query(value="SELECT * FROM connection_requests WHERE sender_id = :userId ORDER BY request_id DESC",nativeQuery=true)
     List<ConnectionRequest>getAllUsersSendedConnectionRequestsPagedByRequestIdDesc(Long userId,Pageable pageable);
     
-    @Query(value="SELECT * FROM connection_requests WHERE receiver_id = :userId ORDER BY request_id DESC",nativeQuery=true)
-    List<ConnectionRequest>getAllUsersReceivedConnectionRequestsPagedByRequestIdDesc(Long userId,Pageable pageable);
+    @Query(
+    	    value = "SELECT * FROM connection_requests WHERE receiver_id = :userId ORDER BY request_id DESC",
+    	    countQuery = "SELECT count(*) FROM connection_requests WHERE receiver_id = :userId",
+    	    nativeQuery = true
+    	)
+    	Page<ConnectionRequest> getAllUsersReceivedConnectionRequestsPagedByRequestIdDesc(
+    	    @Param("userId") Long userId, 
+    	    Pageable pageable
+    	);
     
     @Transactional
     void deleteBySenderIdOrReceiverId(Long senderId, Long receiverId);

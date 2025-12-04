@@ -17,6 +17,7 @@ import ChangePassword from '../components/ChangePassword'
 import ChangePhonePage from '../components/ChangePhonePage'
 import SearchUserPage from '../components/SearchUserPage'
 import UsersProfile from '../components/UsersProfile'
+import ConnectionRequestPage from '../components/ConnectionRequestPage'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -31,7 +32,8 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="change-phone" element={<ChangePhonePage />} />
         <Route path="search-user" element={<SearchUserPage />} />
-        <Route path="users-profile/:userId" element={<UsersProfile />} />           
+        <Route path="users-profile/:userId" element={<UsersProfile />} /> 
+        <Route path="connection-requests" element={<ConnectionRequestPage />} />           
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />

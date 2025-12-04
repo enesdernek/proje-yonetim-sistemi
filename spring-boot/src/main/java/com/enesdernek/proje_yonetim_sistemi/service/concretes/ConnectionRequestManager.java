@@ -3,6 +3,7 @@ package com.enesdernek.proje_yonetim_sistemi.service.concretes;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -113,39 +114,44 @@ public class ConnectionRequestManager implements ConnectionRequestService {
 	}
 
 	@Override
-	public ConnectionRequestDtoPagedResponse getAllUsersReceivedConnectionRequestsPaged(Long userId, int pageNo,
-			int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-		List<ConnectionRequest> requests = this.connectionRequestRepository
-				.getAllUsersReceivedConnectionRequestsPagedByRequestIdDesc(userId, pageable);
+	public ConnectionRequestDtoPagedResponse getAllUsersReceivedConnectionRequestsPaged(
+	        Long userId, int pageNo, int pageSize) {
 
-		User receiver = this.userRepository.findById(userId)
-				.orElseThrow(() -> new NotFoundException("Bağlantı isteği alan kullanıcı bulunamadı."));
+	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-		List<ConnectionRequestDto> dtoList = new ArrayList<>();
+	    Page<ConnectionRequest> page = 
+	        this.connectionRequestRepository.getAllUsersReceivedConnectionRequestsPagedByRequestIdDesc(userId, pageable);
 
-		for (ConnectionRequest req : requests) {
-			User sender = userRepository.findById(req.getSenderId())
-					.orElseThrow(() -> new NotFoundException("Bağlantı isteği atan kullanıcı bulunamadı."));
-			ConnectionRequestDto dto = connectionRequestMapper.toDto(req);
-			dto.setReceiverId(receiver.getUserId());
-			dto.setRecieversUsername(receiver.getUsername());
-			dto.setRecieversProfileImageUrl(receiver.getProfileImageUrl());
-			dto.setSenderId(sender.getUserId());
-			dto.setSendersProfileImageUrl(sender.getProfileImageUrl());
-			dto.setSendersUsername(sender.getUsername());
+	    List<ConnectionRequestDto> dtoList = new ArrayList<>();
 
-			dtoList.add(dto);
-		}
+	    for (ConnectionRequest req : page.getContent()) {
 
-		ConnectionRequestDtoPagedResponse response = new ConnectionRequestDtoPagedResponse();
-		Long totalElements = this.connectionRequestRepository.count();
-		int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-		response.setTotalElements(totalElements);
-		response.setTotalPages(totalPages);
-		response.setRequestDtos(dtoList);
-		return response;
+	        User sender = userRepository.findById(req.getSenderId())
+	                .orElseThrow(() -> new NotFoundException("Bağlantı isteği atan kullanıcı bulunamadı."));
+
+	        User receiver = userRepository.findById(userId)
+	                .orElseThrow(() -> new NotFoundException("Bağlantı isteği alan kullanıcı bulunamadı."));
+
+	        ConnectionRequestDto dto = connectionRequestMapper.toDto(req);
+	        dto.setSenderId(sender.getUserId());
+	        dto.setSendersUsername(sender.getUsername());
+	        dto.setSendersProfileImageUrl(sender.getProfileImageUrl());
+
+	        dto.setReceiverId(receiver.getUserId());
+	        dto.setRecieversUsername(receiver.getUsername());
+	        dto.setRecieversProfileImageUrl(receiver.getProfileImageUrl());
+
+	        dtoList.add(dto);
+	    }
+
+	    ConnectionRequestDtoPagedResponse response = new ConnectionRequestDtoPagedResponse();
+	    response.setRequestDtos(dtoList);
+	    response.setTotalElements(page.getTotalElements());
+	    response.setTotalPages(page.getTotalPages());
+
+	    return response;
 	}
+
 
 	@Override
 	public ConnectionRequestDto acceptRequest(Long userId, Long requestId) {

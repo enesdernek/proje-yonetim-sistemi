@@ -8,11 +8,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import { Avatar, Button } from '@mui/material';
+import { Avatar, Badge, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../redux/slices/userSlice';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BASE_URL = API_URL.replace("/api", ""); // http://localhost:8080
@@ -71,22 +73,31 @@ export default function MenuAppBar({ onMenuClick }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography onClick={()=>navigate("/")} variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography onClick={() => navigate("/")} variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Proje Yönetim Sistemi
           </Typography>
 
           {
             isAuthenticated ? (
               <div>
-                 <IconButton
-                  size="large"
+                <IconButton
+                  size="medium"
+                  onClick={() => navigate("/connection-requests")}
+                  color="inherit"
+                >
+                  <Badge badgeContent={3} color="error">
+                    <PersonAddIcon />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  size="medium"
                   onClick={() => navigate("/search-user")}
                   color="inherit"
                 >
                   <PersonSearchIcon />
                 </IconButton>
                 <IconButton
-                  size="large"
+                  size="small"
                   aria-label="account of current user"
                   aria-controls="menu-appbar"
                   aria-haspopup="true"
@@ -94,12 +105,12 @@ export default function MenuAppBar({ onMenuClick }) {
                   color="inherit"
                 >
                   <Avatar
-                      src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : ""}
-                      alt={user.username}
-                      sx={{ width: 32, height: 32, fontSize: 48 }}
-                    >
-                      {user.username?.slice(0, 2).toUpperCase()}
-                    </Avatar>
+                    src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : ""}
+                    alt={user.username}
+                    sx={{ width: 32, height: 32, fontSize: 48 }}
+                  >
+                    {user.username?.slice(0, 2).toUpperCase()}
+                  </Avatar>
                 </IconButton>
                 <Menu
                   id="menu-appbar"
