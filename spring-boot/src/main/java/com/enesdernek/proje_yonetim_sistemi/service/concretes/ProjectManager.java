@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -82,23 +83,20 @@ public class ProjectManager implements ProjectService {
 	
 
 	@Override
-	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId,int pageNo, int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
-		
-		List<Project> projects = this.projectRepository.findAllByUserIdPaged(userId, pageable);
-		
-		List<ProjectDto> projectDtos = this.projectMapper.toDtoList(projects);
-		
-	    Long totalElements = this.projectRepository.countProjectsByUserId(userId);
+	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId, int pageNo, int pageSize) {
 
-	    int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-		
-		ProjectListDtoPagedResponse response = new ProjectListDtoPagedResponse();
-		response.setTotalElements(totalElements);
-		response.setTotalPages(totalPages);
-		response.setProjectDtos(projectDtos);
-		
-		return response;
+	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+	    Page<Project> projectPage = this.projectRepository.findAllByUserIdPaged(userId, pageable);
+
+	    List<ProjectDto> projectDtos = this.projectMapper.toDtoList(projectPage.getContent());
+
+	    ProjectListDtoPagedResponse response = new ProjectListDtoPagedResponse();
+	    response.setTotalElements(projectPage.getTotalElements());
+	    response.setTotalPages(projectPage.getTotalPages());
+	    response.setProjectDtos(projectDtos);
+
+	    return response;
 	}
 
 

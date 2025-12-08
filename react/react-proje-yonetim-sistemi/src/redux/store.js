@@ -5,6 +5,7 @@ import storage from "redux-persist/lib/storage"
 import  userSlice  from './slices/userSlice'
 import  connectionSlice  from './slices/connectionSlice'
 import  connectionRequestSlice  from './slices/connectionRequestSlice'
+import  projectSlice  from './slices/projectSlice'
 
 
 
@@ -12,7 +13,8 @@ const rootReducer = combineReducers({
     app: appSlice,
     user:userSlice,
     connection: connectionSlice,
-    connectionRequest:connectionRequestSlice
+    connectionRequest:connectionRequestSlice,
+    project: projectSlice
 })
 
 

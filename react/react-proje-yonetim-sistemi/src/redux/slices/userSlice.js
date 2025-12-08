@@ -311,8 +311,6 @@ export const changePhoneNumber = createAsyncThunk(
                 }
             );
 
-            console.log(changePhoneRequest)
-            console.log(response.data)
 
             if (!response.data.success) {
                 return rejectWithValue(response.data.message);

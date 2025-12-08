@@ -34,10 +34,4 @@ public class ProjectDto {
 
 	    private UserDto creator;
 
-	    private List<ProjectMemberDto> memberDtos;
-
-	    private List<TaskDto> taskDtos;
-
-	    private ProjectStatisticsDto statisticsDto;
-
 }

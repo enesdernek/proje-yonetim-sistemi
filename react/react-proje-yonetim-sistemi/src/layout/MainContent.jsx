@@ -19,6 +19,8 @@ import SearchUserPage from '../components/SearchUserPage'
 import UsersProfile from '../components/UsersProfile'
 import ConnectionRequestPage from '../components/ConnectionRequestPage'
 import Connections from '../components/Connections'
+import ProjectList from '../components/ProjectList'
+import TaskList from '../components/TaskList'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -36,6 +38,9 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="users-profile/:userId" element={<UsersProfile />} />
         <Route path="connection-requests" element={<ConnectionRequestPage />} />
         <Route path="connections" element={<Connections />} />
+
+        <Route path="projects" element={<ProjectList />} />
+        <Route path="tasks" element={<TaskList />} />
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />
