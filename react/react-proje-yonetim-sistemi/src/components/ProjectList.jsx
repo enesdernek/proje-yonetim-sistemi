@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getProjectsByUserId } from "../redux/slices/projectSlice";
 import placeholderImage from "../files/placeholder-images/project-placeholder.jpg";
+import { useNavigate } from "react-router-dom";
+
 
 import {
     Box,
@@ -12,17 +14,22 @@ import {
     Pagination,
     CircularProgress,
     CardMedia,
+    Button,
 } from "@mui/material";
+import { getProjectMemberByUserIdAndProjectId } from "../redux/slices/projectMemberSlice";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = API_URL.replace("/api", ""); 
+const BASE_URL = API_URL.replace("/api", "");
 
 
 function ProjectList() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { projects, totalPages, loading } = useSelector((state) => state.project);
     const token = useSelector((state) => state.user.token);
+    const roles = useSelector((state) => state.projectMember.projectRoles || {});
+    const user = useSelector((state) => state.user.user);
 
     const [page, setPage] = useState(1);
 
@@ -30,91 +37,118 @@ function ProjectList() {
         dispatch(getProjectsByUserId({ pageNo: page, pageSize: 10, token }));
     }, [page]);
 
+    useEffect(() => {
+        if (projects?.length > 0) {
+            projects.forEach((project) => {
+                dispatch(getProjectMemberByUserIdAndProjectId({
+                    userId: user.userId,
+                    projectId: project.projectId,
+                    token
+                }));
+            });
+        }
+    }, [projects]);
+
+    useEffect(() => {
+        console.log(roles)
+    }, [roles])
 
     const handlePageChange = (event, value) => {
         setPage(value);
     };
 
-    if (loading) {
-        return (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-
-
     return (
-        <Box sx={{ px: 2 }}>
+        <Box  sx={{ px: 2 }}>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
                 Projeler
             </Typography>
 
-            <Grid container spacing={2}>
-                {projects?.map((project) => (
-                    <Grid key={project.projectId} item size={{ xs: 12, sm: 6, md: 6 }}>
-                        <Card sx={{ p: 1 }}>
-                            <CardMedia
-                                component="img"
-                                height="170"
-                                image={
-                                    project.projectImageUrl
-                                        ? BASE_URL + project.projectImageUrl
-                                        : placeholderImage
-                                }
-                                alt={project.name}
-                                sx={{ borderRadius: 1 }}
-                            />
+            {loading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+                    <CircularProgress />
+                </Box>
+            ) : (
+                <Grid container spacing={2} >
+                    {projects?.map((project) => (
+                        <Grid key={project.projectId} item size={{ xs: 12, sm: 6, md: 6 }} >
+                            <Card
+                                sx={{ p: 1, cursor: "pointer" }}
+                                onClick={() => navigate(`/projects/${project.projectId}`)}
+                            >
+                                <CardMedia
+                                    component="img"
+                                    height="170"
+                                    image={
+                                        project.projectImageUrl
+                                            ? BASE_URL + project.projectImageUrl
+                                            : placeholderImage
+                                    }
+                                    alt={project.name}
+                                    sx={{ borderRadius: 1 }}
+                                />
 
-                            <CardContent>
-                                {/* Proje Adı */}
-                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                    {project.name}
-                                </Typography>
+                                <CardContent >
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        {project.name}
+                                    </Typography>
 
-                                {/* Açıklama */}
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{
-                                        mt: 1,
-                                        display: "-webkit-box",
-                                        overflow: "hidden",
-                                        WebkitLineClamp: 3,
-                                        WebkitBoxOrient: "vertical",
-                                    }}
-                                >
-                                    {project.description}
-                                </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                            mt: 1,
+                                            display: "-webkit-box",
+                                            overflow: "hidden",
+                                            WebkitLineClamp: 3,
+                                            WebkitBoxOrient: "vertical",
+                                        }}
+                                    >
+                                        {project.description}
+                                    </Typography>
 
-                                {/* Status */}
-                                <Typography sx={{ mt: 1 }}>
-                                    <b>Durum:</b> {project.status}
-                                </Typography>
+                                    <Typography sx={{ mt: 1 }}>
+                                        <b>Durum:</b> {project.status}
+                                    </Typography>
 
-                                {/* Creator */}
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    <b>Oluşturan:</b> {project.creator?.username}
-                                </Typography>
+                                    <Typography variant="body2" sx={{ mt: 1 }}>
+                                        <b>Oluşturan:</b> {project.creator?.username}
+                                    </Typography>
 
-                                {/* Created At */}
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    <b>Oluşturulma:</b>{" "}
-                                    {new Date(project.createdAt).toLocaleDateString("tr-TR")}
-                                </Typography>
+                                    <Typography variant="body2" sx={{ mt: 1 }}>
+                                        <b>Oluşturulma:</b>{" "}
+                                        {new Date(project.createdAt).toLocaleDateString("tr-TR")}
+                                    </Typography>
 
-                                {/* Progress */}
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    <b>İlerleme:</b> %{project.progress}
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+                                    <Typography variant="body2" sx={{ mt: 1 }}>
+                                        <b>İlerleme:</b> %{project.progress}
+                                    </Typography>
 
-            {/* Pagination */}
+                                    <Typography sx={{ mt: 1 }}>
+                                        <b>Rol: </b>
+                                        <Button
+                                            sx={{
+                                                paddingX: "3px",
+                                                pointerEvents: "none",
+                                                opacity: 1,
+                                                "&.Mui-disabled": {
+                                                    backgroundColor: (theme) => theme.palette.warning.main,
+                                                    color: "#fff",
+                                                },
+                                            }}
+                                            disabled
+                                            color="warning"
+                                            variant="contained"
+                                        >
+                                            {roles?.[project.projectId] ?? "Yükleniyor..."}
+                                        </Button>
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
+
             {totalPages > 1 && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
                     <Pagination
@@ -130,3 +164,4 @@ function ProjectList() {
 }
 
 export default ProjectList;
+

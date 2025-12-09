@@ -6,6 +6,7 @@ import  userSlice  from './slices/userSlice'
 import  connectionSlice  from './slices/connectionSlice'
 import  connectionRequestSlice  from './slices/connectionRequestSlice'
 import  projectSlice  from './slices/projectSlice'
+import  projectMemberSlice  from './slices/projectMemberSlice'
 
 
 
@@ -14,7 +15,8 @@ const rootReducer = combineReducers({
     user:userSlice,
     connection: connectionSlice,
     connectionRequest:connectionRequestSlice,
-    project: projectSlice
+    project: projectSlice,
+    projectMember:projectMemberSlice
 })
 
 

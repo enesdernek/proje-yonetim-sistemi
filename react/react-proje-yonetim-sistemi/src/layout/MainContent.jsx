@@ -21,6 +21,7 @@ import ConnectionRequestPage from '../components/ConnectionRequestPage'
 import Connections from '../components/Connections'
 import ProjectList from '../components/ProjectList'
 import TaskList from '../components/TaskList'
+import Project from '../components/Project'
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
@@ -40,6 +41,8 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="connections" element={<Connections />} />
 
         <Route path="projects" element={<ProjectList />} />
+        <Route path="projects/:projectId" element={<Project />} />
+
         <Route path="tasks" element={<TaskList />} />
       </Route>
       <Route path="/authenticate" element={<Authenticate />} />
