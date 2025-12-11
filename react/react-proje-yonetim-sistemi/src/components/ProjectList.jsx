@@ -58,7 +58,7 @@ function ProjectList() {
     };
 
     return (
-        <Box  sx={{ px: 2 }}>
+        <Box sx={{ px: 2 }}>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
                 Projeler
             </Typography>
@@ -72,7 +72,16 @@ function ProjectList() {
                     {projects?.map((project) => (
                         <Grid key={project.projectId} item size={{ xs: 12, sm: 6, md: 6 }} >
                             <Card
-                                sx={{ p: 1, cursor: "pointer" }}
+                                sx={{
+                                    p: 1,
+                                    cursor: "pointer",
+                                    transition: "0.2s ease",
+                                    "&:hover": {
+                                        boxShadow: 4,
+                                        transform: "scale(1.01)",
+                                        backgroundColor: "rgba(0,0,0,0.03)",
+                                    }
+                                }}
                                 onClick={() => navigate(`/projects/${project.projectId}`)}
                             >
                                 <CardMedia

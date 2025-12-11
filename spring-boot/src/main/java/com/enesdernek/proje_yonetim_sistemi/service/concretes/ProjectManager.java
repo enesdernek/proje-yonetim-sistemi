@@ -73,9 +73,6 @@ public class ProjectManager implements ProjectService {
 				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
 				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
 
-		if (projectMember.getRole() != ProjectRole.MANAGER) {
-			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
-		}
 		
 		return this.projectMapper.toDto(project);
 	}

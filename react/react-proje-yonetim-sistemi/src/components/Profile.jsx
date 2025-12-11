@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAuthenticatedUser, uploadProfilePicture, deleteProfilePicture } from '../redux/slices/userSlice';
 import { getConnectionsPaged } from '../redux/slices/connectionSlice';
+import userPlaceholderImage from "../files/placeholder-images/user-placeholder.jpg";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BASE_URL = API_URL.replace("/api", ""); 
@@ -77,7 +79,7 @@ export default function Profile() {
               <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative', mb: 3 }}>
                 <Box sx={{ position: 'relative', display: 'inline-block' }}>
                   <Avatar
-                    src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : ""}
+                    src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : userPlaceholderImage}
                     alt={user.username}
                     sx={{ width: 150, height: 150, fontSize: 48 }}
                   >

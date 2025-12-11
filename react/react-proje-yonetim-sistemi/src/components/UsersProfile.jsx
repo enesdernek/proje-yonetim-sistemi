@@ -13,9 +13,14 @@ import {
     Button
 } from "@mui/material";
 
+const API_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = API_URL.replace("/api", ""); 
+
 import { getUserByUserId } from "../redux/slices/userSlice";
 import { isConnected, deleteConnection } from "../redux/slices/connectionSlice";
 import { createConnectionRequest, deleteConnectionRequest } from "../redux/slices/connectionRequestSlice";
+import userPlaceholderImage from "../files/placeholder-images/user-placeholder.jpg";
+
 
 function UsersProfile() {
     const { userId } = useParams();
@@ -102,6 +107,7 @@ function UsersProfile() {
         );
     }
 
+
     const isOwnProfile = user?.userId === viewedUser.userId;
 
     return (
@@ -110,7 +116,7 @@ function UsersProfile() {
                 <CardContent>
                     <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                         <Avatar
-                            src={viewedUser.profileImageUrl || ""}
+                            src={viewedUser.profileImageUrl ? BASE_URL+viewedUser.profileImageUrl : userPlaceholderImage}
                             sx={{ width: 90, height: 90, fontSize: 40 }}
                         >
                             {!viewedUser.profileImageUrl &&

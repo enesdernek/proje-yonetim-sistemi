@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../redux/slices/userSlice';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import usersPlaceholderImage from "../files/placeholder-images/user-placeholder.jpg";
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -113,7 +114,7 @@ export default function MenuAppBar({ onMenuClick }) {
                   color="inherit"
                 >
                   <Avatar
-                    src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : ""}
+                    src={user.profileImageUrl ? BASE_URL + user.profileImageUrl : usersPlaceholderImage}
                     alt={user.username}
                     sx={{ width: 32, height: 32, fontSize: 48 }}
                   >
