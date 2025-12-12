@@ -22,13 +22,27 @@ import Connections from '../components/Connections'
 import ProjectList from '../components/ProjectList'
 import TaskList from '../components/TaskList'
 import Project from '../components/Project'
+import { useSelector } from 'react-redux'
+import { Navigate } from "react-router-dom";
+import ProtectedRoute from './ProtectedRoute'
+import NotAuthenticated from '../components/NotAuthenticated'
+import ProjectAddMember from '../components/ProjectAddMember'
+
 
 function MainContent({ drawerOpen, toggleDrawer }) {
 
   return (
 
     <Routes>
-      <Route path="/" element={<MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />}>
+      {/* Giriş gerektiren tüm sayfalar */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <MainPage drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<StartPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="account-settings" element={<AccountSettings />} />
@@ -39,12 +53,13 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="users-profile/:userId" element={<UsersProfile />} />
         <Route path="connection-requests" element={<ConnectionRequestPage />} />
         <Route path="connections" element={<Connections />} />
-
         <Route path="projects" element={<ProjectList />} />
         <Route path="projects/:projectId" element={<Project />} />
-
+        <Route path="projects/add-member/:projectId" element={<ProjectAddMember />} />
         <Route path="tasks" element={<TaskList />} />
       </Route>
+
+      {/* Giriş gerektirmeyen sayfalar */}
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/register" element={<Register />} />
       <Route path="/register-approved" element={<RegisterApproved />} />
@@ -54,6 +69,8 @@ function MainContent({ drawerOpen, toggleDrawer }) {
       <Route path="/reset-password" element={<ResetPasswordResponsePage />} />
       <Route path="/change-email" element={<ChangeEmailAdressResponsePage />} />
 
+      {/* Not Authenticated Page */}
+      <Route path="/not-authenticated" element={<NotAuthenticated />} />
     </Routes>
 
   )
