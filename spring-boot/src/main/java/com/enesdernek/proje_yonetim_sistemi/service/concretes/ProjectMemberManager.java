@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -134,6 +135,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		
 		if (member.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Üye silmeye yetkiniz yok.");
 		}
@@ -185,6 +187,30 @@ public class ProjectMemberManager implements ProjectMemberService {
 	    this.projectMemberRepository.save(roleChangedUser);
 
 	    return this.projectMemberMapper.toDto(roleChangedUser);
+	}
+
+	@Transactional
+	@Override
+	public void leaveProject(Long userId, Long projectId) {
+	    Project project = this.projectRepository.findById(projectId)
+	            .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+	    ProjectMember member = this.projectMemberRepository
+	            .findByUser_UserIdAndProject_ProjectId(userId, projectId)
+	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+	    ProjectRole leavingRole = member.getRole();
+
+	    long managerCount = project.getMembers()
+	            .stream()
+	            .filter(m -> m.getRole() == ProjectRole.MANAGER)
+	            .count();
+
+	    if (leavingRole == ProjectRole.MANAGER && managerCount <= 1) {
+	        throw new UnauthorizedActionException("Projede en az 1 adet yönetici (manager) bulunmalıdır.");
+	    }
+
+	    this.projectMemberRepository.deleteMember(userId, projectId);
 	}
 
 }

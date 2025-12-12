@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -24,4 +26,13 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 	Optional<ProjectMember> deleteByUser_UserIdAndProject_ProjectId(Long deletedUserId,Long projectId);
 	
 	long countByProject_ProjectIdAndRole(Long projectId, ProjectRole role);
+	
+	@Query(
+		    value = "DELETE FROM project_members WHERE user_id = :userId AND project_id = :projectId",
+		    nativeQuery = true
+		)
+	@Modifying
+
+	void deleteMember(@Param("userId") Long userId, @Param("projectId") Long projectId);
+
 }

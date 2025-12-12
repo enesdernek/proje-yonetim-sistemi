@@ -21,5 +21,7 @@ public interface ProjectMemberService {
 	public List<ProjectMemberDto> deleteMemberFromProject(Long userId,Long deletedUserId,Long projectId);
 	
 	public ProjectMemberDto changeMembersRole(Long userId, Long roleChangedUserId, Long projectId, ProjectRole role);
+	
+	public void leaveProject(Long userId,Long projectId);
 
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessDataResult;
+import com.enesdernek.proje_yonetim_sistemi.core.utilities.results.SuccessResult;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.ProjectMemberRequest;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
@@ -29,6 +30,17 @@ public class ProjectMemberController {
 	
 	@Autowired
 	private ProjectMemberService projectMemberService;
+	
+	@DeleteMapping("/leave-project")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessResult> leaveProject(Authentication auth,@RequestParam Long projectId) {
+		User user = (User) auth.getPrincipal();
+		Long userId = user.getUserId();
+		
+		this.projectMemberService.leaveProject(userId, projectId);
+		SuccessResult result = new SuccessResult("Kullanıcı başarılı bir şekilde projeden ayrıldı.");
+		return new ResponseEntity<>(result,HttpStatus.OK);
+	}
 	
 	@PutMapping("/change-members-role")
 	@PreAuthorize("isAuthenticated()")
