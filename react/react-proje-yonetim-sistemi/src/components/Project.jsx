@@ -9,7 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from "@mui/material";
-import { changeMembersRole, deleteMemberFromProject } from "../redux/slices/projectMemberSlice";
+import { changeMembersRole, deleteMemberFromProject, leaveProject } from "../redux/slices/projectMemberSlice";
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -46,7 +46,33 @@ function Project() {
     const [deleteUser, setDeleteUser] = React.useState(null);
     const [deleteError, setDeleteError] = React.useState("");
 
+    const [leaveDialogOpen, setLeaveDialogOpen] = React.useState(false);
+    const [leaveError, setLeaveError] = React.useState("");
+
     const userRole = projectRoles?.[projectId];
+
+    const openLeaveDialog = () => {
+        setLeaveError("");
+        setLeaveDialogOpen(true);
+    };
+
+    const handleLeaveConfirm = async () => {
+        const resultAction = await dispatch(
+            leaveProject({
+                projectId,
+                token,
+            })
+        );
+
+        if (leaveProject.rejected.match(resultAction)) {
+            setLeaveError(resultAction.payload || "Projeden ayrılırken bir hata oluştu.");
+            return;
+        }
+
+        // Başarılıysa
+        setLeaveDialogOpen(false);
+        navigate("/projects");
+    };
 
     const handleDeleteConfirm = async () => {
         if (!deleteUser) return;
@@ -59,7 +85,7 @@ function Project() {
 
         if (deleteMemberFromProject.rejected.match(resultAction)) {
             setDeleteError(resultAction.payload || "Bir hata oluştu.");
-            return; 
+            return;
         }
 
         setDeleteDialogOpen(false);
@@ -75,7 +101,7 @@ function Project() {
 
     const openRoleDialog = (member) => {
         setSelectedMember(member);
-        setSelectedRole(member.role); 
+        setSelectedRole(member.role);
         setRoleDialogOpen(true);
     };
 
@@ -177,7 +203,7 @@ function Project() {
                                 }}
                             >
                                 <Button variant="contained" color="primary" sx={{ textTransform: "none" }}>
-                                    <EditCalendarIcon sx={{ mr: 1 }} />Projeyi Güncelle
+                                    <EditCalendarIcon sx={{ mr: 1 }} />Proje Durumunu Yönet
                                 </Button>
 
                                 <Button variant="contained" color="secondary" sx={{ textTransform: "none" }}>
@@ -230,7 +256,7 @@ function Project() {
                         Proje Üyeleri
                         {
                             userRole === "MANAGER" && (
-                                <Button onClick={()=>navigate("/projects/add-member/"+project.projectId)} variant="contained" color="success" sx={{ textTransform: "none", ml: 1, padding: "5px", paddingRight: "10px" }}>
+                                <Button onClick={() => navigate(`/projects/${project.projectId}/add-member` )} variant="contained" color="success" sx={{ textTransform: "none", ml: 1, padding: "5px", paddingRight: "10px" }}>
                                     <AddIcon sx={{ mr: 0 }} /> Üye Ekle
                                 </Button>)
                         }
@@ -323,7 +349,7 @@ function Project() {
                                                 color="warning"
                                                 size="small"
                                                 sx={{ textTransform: "none" }}
-                                                onClick={() => console.log("projeden çık") /* Buraya çıkış thunk'ı ekleyeceksin */}
+                                                onClick={openLeaveDialog}
                                             >
                                                 Projeden Ayrıl
                                             </Button>
@@ -362,6 +388,36 @@ function Project() {
                             );
                         })}
                     </Stack>
+
+                    <Dialog open={leaveDialogOpen} onClose={() => setLeaveDialogOpen(false)}>
+                        <DialogTitle>Projeden Ayrıl</DialogTitle>
+
+                        <DialogContent sx={{ minWidth: 300 }}>
+                            <Typography>
+                                Bu projeden ayrılmak istediğinize emin misiniz?
+                            </Typography>
+
+                            {leaveError && (
+                                <Typography color="error" sx={{ mt: 2 }}>
+                                    {leaveError}
+                                </Typography>
+                            )}
+                        </DialogContent>
+
+                        <DialogActions>
+                            <Button onClick={() => setLeaveDialogOpen(false)}>
+                                Vazgeç
+                            </Button>
+
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={handleLeaveConfirm}
+                            >
+                                Onayla
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
 
                     <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
                         <DialogTitle>Üyeyi Sil</DialogTitle>

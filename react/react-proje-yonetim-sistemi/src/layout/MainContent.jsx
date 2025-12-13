@@ -55,7 +55,7 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="connections" element={<Connections />} />
         <Route path="projects" element={<ProjectList />} />
         <Route path="projects/:projectId" element={<Project />} />
-        <Route path="projects/add-member/:projectId" element={<ProjectAddMember />} />
+        <Route path="projects/:projectId/add-member" element={<ProjectAddMember />} />
         <Route path="tasks" element={<TaskList />} />
       </Route>
 

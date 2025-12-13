@@ -129,7 +129,7 @@ export const addProjectMembers = createAsyncThunk(
         try {
             const response = await axios.post(
                 `${API_URL_PROJECT_MEMBER}/add-members?projectId=${projectId}`,
-                members,  
+                members,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -150,6 +150,33 @@ export const addProjectMembers = createAsyncThunk(
         }
     }
 );
+
+export const leaveProject = createAsyncThunk(
+    "projectMember/leaveProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete(
+                `${API_URL_PROJECT_MEMBER}/leave-project?projectId=${projectId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return { projectId };
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Projeden ayrılırken bir hata oluştu."
+            );
+        }
+    }
+);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const projectMemberSlice = createSlice({
@@ -259,6 +286,31 @@ export const projectMemberSlice = createSlice({
                 }
             })
             .addCase(addProjectMembers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(leaveProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(leaveProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const { projectId } = action.payload;
+
+                state.projectMember = null;
+
+                if (state.projectRoles?.[projectId]) {
+                    delete state.projectRoles[projectId];
+                }
+
+                if (state.members && state.members.length > 0) {
+                    state.members = state.members.filter(
+                        (m) => m.projectDto?.projectId !== projectId
+                    );
+                }
+            })
+            .addCase(leaveProject.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });
