@@ -27,6 +27,7 @@ import { Navigate } from "react-router-dom";
 import ProtectedRoute from './ProtectedRoute'
 import NotAuthenticated from '../components/NotAuthenticated'
 import ProjectAddMember from '../components/ProjectAddMember'
+import ProjectUpdate from '../components/ProjectUpdate'
 
 
 function MainContent({ drawerOpen, toggleDrawer }) {
@@ -56,6 +57,7 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="projects" element={<ProjectList />} />
         <Route path="projects/:projectId" element={<Project />} />
         <Route path="projects/:projectId/add-member" element={<ProjectAddMember />} />
+        <Route path="projects/:projectId/update-project" element={<ProjectUpdate />} />
         <Route path="tasks" element={<TaskList />} />
       </Route>
 

@@ -51,13 +51,13 @@ export const getProjectById = createAsyncThunk(
                 }
             );
 
-            
+
 
             if (!response.data.success) {
                 return rejectWithValue(response.data.message);
             }
 
-            return response.data.data; 
+            return response.data.data;
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Proje getirilirken hata oluştu."
@@ -65,6 +65,95 @@ export const getProjectById = createAsyncThunk(
         }
     }
 );
+
+export const updateProject = createAsyncThunk(
+    "project/updateProject",
+    async ({ projectId, projectDtoIU, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/update-project?projectId=${projectId}`,
+                projectDtoIU,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje güncellenirken bir hata oluştu."
+            );
+        }
+    }
+);
+
+export const uploadProjectImage = createAsyncThunk(
+    "project/uploadProjectImage",
+    async ({ projectId, file, token }, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await axios.put(
+                `${API_URL_PROJECT}/upload-project-image?projectId=${projectId}`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        // axios otomatik boundary ekler
+                        "Content-Type": "multipart/form-data",
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            // SuccessDataResult<ProjectDto>
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje resmi yüklenirken bir hata oluştu."
+            );
+        }
+    }
+);
+
+export const deleteProjectImage = createAsyncThunk(
+    "project/deleteProjectImage",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete(
+                `${API_URL_PROJECT}/delete-project-image?projectId=${projectId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            // SuccessDataResult<ProjectDto>
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje resmi silinirken bir hata oluştu."
+            );
+        }
+    }
+);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,11 +189,81 @@ export const projectSlice = createSlice({
             })
             .addCase(getProjectById.fulfilled, (state, action) => {
                 state.loading = false;
-                state.project = action.payload; 
+                state.project = action.payload;
             })
             .addCase(getProjectById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Proje getirilemedi.";
+            })
+
+            .addCase(updateProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(updateProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(uploadProjectImage.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(uploadProjectImage.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(uploadProjectImage.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(deleteProjectImage.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteProjectImage.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(deleteProjectImage.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     }
 })

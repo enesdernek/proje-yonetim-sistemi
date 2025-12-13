@@ -136,7 +136,7 @@ public class ProjectController {
 
 	@DeleteMapping(value = "/delete-project-image")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<ProjectDto>> uploadImage(Authentication auth,
+	public ResponseEntity<SuccessDataResult<ProjectDto>> deleteImage(Authentication auth,
 			@RequestParam Long projectId) {
 		User user = (User) auth.getPrincipal();
 		Long userId = user.getUserId();

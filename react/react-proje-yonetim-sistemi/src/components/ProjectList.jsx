@@ -133,7 +133,7 @@ function ProjectList() {
                                     </Typography>
 
                                     <Typography sx={{ mt: 1 }}>
-                                        <b>Rol: </b>
+                                        <b>Rolün: </b>
                                         <Button
                                             sx={{
                                                 paddingX: "3px",

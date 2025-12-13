@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from "@mui/material";
 import { changeMembersRole, deleteMemberFromProject, leaveProject } from "../redux/slices/projectMemberSlice";
-
+import EditIcon from '@mui/icons-material/Edit';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BASE_URL = API_URL.replace("/api", "");
@@ -202,11 +202,15 @@ function Project() {
                                     flexWrap: "wrap",
                                 }}
                             >
-                                <Button variant="contained" color="primary" sx={{ textTransform: "none" }}>
+                                <Button variant="contained" color="secondary" sx={{ textTransform: "none" }}>
                                     <EditCalendarIcon sx={{ mr: 1 }} />Proje Durumunu Yönet
                                 </Button>
 
-                                <Button variant="contained" color="secondary" sx={{ textTransform: "none" }}>
+                                <Button onClick={()=>navigate(`/projects/${projectId}/update-project`)} variant="contained" color="warning" sx={{ textTransform: "none" }}>
+                                    <EditIcon sx={{ mr: 1 }} /> Projeyi Güncelle
+                                </Button>
+
+                                <Button variant="contained" color="primary" sx={{ textTransform: "none" }}>
                                     <SettingsIcon sx={{ mr: 1 }} /> Proje Ayarları
                                 </Button>
 
