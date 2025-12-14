@@ -161,7 +161,7 @@ function Project() {
     if (!project) return null;
 
     return (
-        <Box sx={{ mx: "auto", mt: 4, px: 2 }}>
+        <Box sx={{ mx: "auto", mt: 2, px: 2 }}>
             <Card sx={{ borderRadius: 3, boxShadow: 4 }}>
                 {/* 🔹 Proje Resmi */}
                 <CardMedia

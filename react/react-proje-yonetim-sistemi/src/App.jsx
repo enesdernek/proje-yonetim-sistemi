@@ -18,10 +18,10 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(()=>{
-      dispatch(clearMessage())
-      dispatch(clearSuccessMessage())
-  },[navigate])
+  useEffect(() => {
+    dispatch(clearMessage())
+    dispatch(clearSuccessMessage())
+  }, [navigate])
 
   return (
     <>
