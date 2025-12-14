@@ -231,6 +231,27 @@ public class ProjectManager implements ProjectService {
 
 		return this.projectMapper.toDto(project);
 	}
+	
+	@Override
+	public ProjectDto restartProject(Long userId, Long projectId) {
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
+		
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+		}
+		
+		project.setStatus(projectStatus.IN_PROGRESS);
+		
+		this.projectRepository.save(project);
+
+		return this.projectMapper.toDto(project);
+	}
+
 
 	@Override
 	@Transactional
@@ -319,6 +340,9 @@ public class ProjectManager implements ProjectService {
 		
 	}
 
+
+
+	
 
 	
 

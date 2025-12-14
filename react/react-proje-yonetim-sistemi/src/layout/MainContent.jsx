@@ -28,6 +28,8 @@ import ProtectedRoute from './ProtectedRoute'
 import NotAuthenticated from '../components/NotAuthenticated'
 import ProjectAddMember from '../components/ProjectAddMember'
 import ProjectUpdate from '../components/ProjectUpdate'
+import ProjectManagement from '../components/ProjectManagement'
+import ProjectCreate from '../components/ProjectCreate'
 
 
 function MainContent({ drawerOpen, toggleDrawer }) {
@@ -58,6 +60,8 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="projects/:projectId" element={<Project />} />
         <Route path="projects/:projectId/add-member" element={<ProjectAddMember />} />
         <Route path="projects/:projectId/update-project" element={<ProjectUpdate />} />
+        <Route path="projects/:projectId/manage-project" element={<ProjectManagement />} />
+        <Route path="projects/create-project" element={<ProjectCreate />} />
         <Route path="tasks" element={<TaskList />} />
       </Route>
 

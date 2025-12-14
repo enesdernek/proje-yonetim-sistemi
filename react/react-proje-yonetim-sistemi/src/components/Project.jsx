@@ -51,6 +51,38 @@ function Project() {
 
     const userRole = projectRoles?.[projectId];
 
+    const STATUS_LABELS = {
+        PLANNING: "Planlanıyor",
+        IN_PROGRESS: "Devam Ediyor",
+        ON_HOLD: "Beklemede",
+        CANCELLED: "İptal Edildi",
+        COMPLETED: "Tamamlandı",
+    };
+
+    const STATUS_COLORS = {
+        PLANNING: "#1976d2",
+        IN_PROGRESS: "#2e7d32",
+        ON_HOLD: "#ed6c02",
+        CANCELLED: "#d32f2f",
+        COMPLETED: "#6a1b9a",
+    };
+
+    const ROLE_LABELS = {
+        MANAGER: "Yönetici",
+        DEVELOPER: "Geliştirici",
+        DESIGNER: "Tasarımcı",
+        TESTER: "Test Uzmanı",
+        MEMBER: "Üye",
+    };
+
+    const ROLE_COLORS = {
+        MANAGER: "#1976d2",
+        DEVELOPER: "#2e7d32",
+        DESIGNER: "#6a1b9a",
+        TESTER: "#ed6c02",
+        MEMBER: "#616161",
+    };
+
     const openLeaveDialog = () => {
         setLeaveError("");
         setLeaveDialogOpen(true);
@@ -202,11 +234,11 @@ function Project() {
                                     flexWrap: "wrap",
                                 }}
                             >
-                                <Button variant="contained" color="secondary" sx={{ textTransform: "none" }}>
+                                <Button onClick={() => navigate(`/projects/${projectId}/manage-project`)} variant="contained" color="secondary" sx={{ textTransform: "none" }}>
                                     <EditCalendarIcon sx={{ mr: 1 }} />Proje Durumunu Yönet
                                 </Button>
 
-                                <Button onClick={()=>navigate(`/projects/${projectId}/update-project`)} variant="contained" color="warning" sx={{ textTransform: "none" }}>
+                                <Button onClick={() => navigate(`/projects/${projectId}/update-project`)} variant="contained" color="warning" sx={{ textTransform: "none" }}>
                                     <EditIcon sx={{ mr: 1 }} /> Projeyi Güncelle
                                 </Button>
 
@@ -220,10 +252,23 @@ function Project() {
 
                     <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                         {userRole && (
-                            <Chip label={`Rolün: ${userRole}`} color="secondary" sx={{ mt: 1 }} />
-                        )}
-                        <Chip label={project.status} color="primary" />
-                        <Chip label={`İlerleme: %${project.progress}`} variant="outlined" />
+                            <Chip
+                                label={`Rolün: ${ROLE_LABELS[userRole] || userRole}`}
+                                sx={{
+                                    mt: 1,
+                                    backgroundColor: ROLE_COLORS[userRole] || "#e0e0e0",
+                                    color: "#fff",
+                                    fontWeight: 600,
+                                }}
+                            />)}
+                        <Chip
+                            label={STATUS_LABELS[project.status] || project.status}
+                            sx={{
+                                backgroundColor: "#e3f2fd", // açık mavi arka plan
+                                color: STATUS_COLORS[project.status] || "#1976d2",
+                                fontWeight: 600,
+                            }}
+                        />                        <Chip label={`İlerleme: %${project.progress}`} variant="outlined" />
                     </Stack>
 
                     <Divider sx={{ my: 2 }} />
@@ -260,7 +305,7 @@ function Project() {
                         Proje Üyeleri
                         {
                             userRole === "MANAGER" && (
-                                <Button onClick={() => navigate(`/projects/${project.projectId}/add-member` )} variant="contained" color="success" sx={{ textTransform: "none", ml: 1, padding: "5px", paddingRight: "10px" }}>
+                                <Button onClick={() => navigate(`/projects/${project.projectId}/add-member`)} variant="contained" color="success" sx={{ textTransform: "none", ml: 1, padding: "5px", paddingRight: "10px" }}>
                                     <AddIcon sx={{ mr: 0 }} /> Üye Ekle
                                 </Button>)
                         }
@@ -325,12 +370,20 @@ function Project() {
                                         </Typography>
 
                                         {/* Projedeki Rol */}
-                                        <Chip
-                                            label={`Rol: ${m.role}`}
-                                            color="secondary"
-                                            size="small"
+                                        <Typography
+                                            variant="body2"
                                             sx={{ mt: 0.5 }}
-                                        />
+                                        >
+                                            <b>Rol: </b>
+                                            <span
+                                                style={{
+                                                    color: ROLE_COLORS[m.role] || "#616161",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {ROLE_LABELS[m.role] || m.role}
+                                            </span>
+                                        </Typography>
 
                                         {/* Katılma Tarihi */}
                                         <Typography
@@ -463,11 +516,11 @@ function Project() {
                                 value={selectedRole}
                                 onChange={(e) => setSelectedRole(e.target.value)}
                             >
-                                <MenuItem value="MANAGER">Manager</MenuItem>
-                                <MenuItem value="DEVELOPER">Developer</MenuItem>
-                                <MenuItem value="DESIGNER">Designer</MenuItem>
-                                <MenuItem value="TESTER">Tester</MenuItem>
-                                <MenuItem value="MEMBER">Member</MenuItem>
+                                <MenuItem value="MANAGER">Yönetici</MenuItem>
+                                <MenuItem value="DEVELOPER">Geliştirici</MenuItem>
+                                <MenuItem value="DESIGNER">Tasarımcı</MenuItem>
+                                <MenuItem value="TESTER">Test Uzmanı</MenuItem>
+                                <MenuItem value="MEMBER">Üye</MenuItem>
                             </Select>
                         </DialogContent>
 

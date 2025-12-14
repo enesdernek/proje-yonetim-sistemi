@@ -133,6 +133,18 @@ public class ProjectController {
 		SuccessDataResult<ProjectDto> result = new SuccessDataResult<ProjectDto>(dto, "Proje başarıyla başlatıldı.");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	
+	@PutMapping("/restart-project")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<ProjectDto>> restartProject(Authentication auth,
+			@RequestParam Long projectId) {
+		User user = (User) auth.getPrincipal();
+		Long userId = user.getUserId();
+
+		ProjectDto dto = this.projectService.restartProject(userId, projectId);
+		SuccessDataResult<ProjectDto> result = new SuccessDataResult<ProjectDto>(dto, "Proje başarıyla başlatıldı.");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 
 	@DeleteMapping(value = "/delete-project-image")
 	@PreAuthorize("isAuthenticated()")

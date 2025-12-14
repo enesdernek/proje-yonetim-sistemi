@@ -19,6 +19,8 @@ function ProjectBreadcrumbs() {
     projects: "Projeler",
     "add-member": "Üye Ekle",
     "update-project": "Projeyi Güncelle",
+    "manage-project": "Proje Durumunu Yönet",
+    "create-project": "Proje Oluştur"
   };
 
   return (

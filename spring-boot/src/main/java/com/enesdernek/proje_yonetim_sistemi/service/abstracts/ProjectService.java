@@ -29,5 +29,7 @@ public interface ProjectService {
 	public ProjectDto getByProjectId(Long userId,Long projectId);
 	
 	public void deleteProjectByProjectId(Long projectId);
+	
+	public ProjectDto restartProject(Long userId,Long projectId);
 
 }

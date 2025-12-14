@@ -154,6 +154,163 @@ export const deleteProjectImage = createAsyncThunk(
     }
 );
 
+// PROJE İPTAL
+export const cancelProject = createAsyncThunk(
+    "project/cancelProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/cancel-project?projectId=${projectId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data; // ProjectDto
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje iptal edilirken hata oluştu."
+            );
+        }
+    }
+);
+
+// PROJE BEKLEMEYE AL
+export const onHoldProject = createAsyncThunk(
+    "project/onHoldProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/onhold-project?projectId=${projectId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje beklemeye alınırken hata oluştu."
+            );
+        }
+    }
+);
+
+// PROJE BAŞLAT
+export const startProject = createAsyncThunk(
+    "project/startProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/start-project?projectId=${projectId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Proje başlatılırken hata oluştu."
+            );
+        }
+    }
+);
+
+export const createProject = createAsyncThunk(
+    "project/createProject",
+    async ({ projectDtoIU, file, token }, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+
+            formData.append(
+                "project",
+                new Blob([JSON.stringify(projectDtoIU)], {
+                    type: "application/json",
+                })
+            );
+
+            if (file) {
+                formData.append("file", file);
+            }
+
+            const response = await axios.post(
+                `${API_URL_PROJECT}/create`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            // SuccessDataResult<ProjectDto>
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje oluşturulurken bir hata oluştu."
+            );
+        }
+    }
+);
+
+// PROJEYİ TEKRAR HAYATA GEÇİR
+export const restartProject = createAsyncThunk(
+    "project/restartProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/restart-project?projectId=${projectId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            // SuccessDataResult<ProjectDto>
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje tekrar hayata geçirilirken hata oluştu."
+            );
+        }
+    }
+);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -264,7 +421,121 @@ export const projectSlice = createSlice({
             .addCase(deleteProjectImage.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+            .addCase(cancelProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(cancelProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(cancelProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // ON HOLD PROJECT
+            .addCase(onHoldProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(onHoldProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(onHoldProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // START PROJECT
+            .addCase(startProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(startProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(startProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(createProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const createdProject = action.payload;
+
+                // Detay sayfası için
+                state.project = createdProject;
+
+                // Listeye ekle (en üste ekledim)
+                state.projects.unshift(createdProject);
+            })
+            .addCase(createProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(restartProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(restartProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                // Detay sayfası
+                state.project = updatedProject;
+
+                // Listeyi güncelle
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(restartProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     }
 })
 
