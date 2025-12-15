@@ -10,7 +10,10 @@ import {
     Stack,
     Snackbar,
     Alert,
-    CircularProgress
+    CircularProgress,
+    Slider,
+    LinearProgress,
+    Divider
 } from "@mui/material";
 
 import {
@@ -18,7 +21,8 @@ import {
     onHoldProject,
     startProject,
     restartProject,
-    getProjectById
+    getProjectById,
+    updateProjectProgress
 } from "../redux/slices/projectSlice";
 
 function ProjectManagement() {
@@ -31,6 +35,9 @@ function ProjectManagement() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+    const [progress, setProgress] = useState(0);
+    const [progressLoading, setProgressLoading] = useState(false);
 
     const STATUS_LABELS = {
         PLANNING: "Planlanıyor",
@@ -45,6 +52,12 @@ function ProjectManagement() {
             dispatch(getProjectById({ projectId, token }));
         }
     }, [dispatch, projectId, token]);
+
+    useEffect(() => {
+        if (project?.progress !== undefined) {
+            setProgress(project.progress);
+        }
+    }, [project]);
 
     const showSnackbar = (message, severity = "success") => {
         setSnackbarMessage(message);
@@ -66,6 +79,30 @@ function ProjectManagement() {
         }
 
         showSnackbar("İşlem başarıyla tamamlandı.");
+    };
+
+    const handleProgressUpdate = async () => {
+        setProgressLoading(true);
+
+        const resultAction = await dispatch(
+            updateProjectProgress({
+                projectId,
+                process: progress,
+                token
+            })
+        );
+
+        setProgressLoading(false);
+
+        if (updateProjectProgress.rejected.match(resultAction)) {
+            showSnackbar(
+                resultAction.payload || "İlerleme güncellenemedi.",
+                "error"
+            );
+            return;
+        }
+
+        showSnackbar("Proje ilerlemesi güncellendi.");
     };
 
     if (loading || !project) {
@@ -92,14 +129,12 @@ function ProjectManagement() {
                     </Typography>
 
                     <Stack direction="row" spacing={2} flexWrap="wrap">
-
                         {project.status === "PLANNING" && (
                             <>
                                 <Button
                                     variant="contained"
                                     color="success"
                                     onClick={() => handleAction(startProject)}
-                                    sx={{ textTransform: "none" }}
                                 >
                                     Projeyi Başlat
                                 </Button>
@@ -108,8 +143,6 @@ function ProjectManagement() {
                                     variant="contained"
                                     color="error"
                                     onClick={() => handleAction(cancelProject)}
-                                    sx={{ textTransform: "none" }}
-
                                 >
                                     Projeyi İptal Et
                                 </Button>
@@ -122,8 +155,6 @@ function ProjectManagement() {
                                     variant="contained"
                                     color="warning"
                                     onClick={() => handleAction(onHoldProject)}
-                                    sx={{ textTransform: "none" }}
-
                                 >
                                     Beklemeye Al
                                 </Button>
@@ -132,8 +163,6 @@ function ProjectManagement() {
                                     variant="contained"
                                     color="error"
                                     onClick={() => handleAction(cancelProject)}
-                                    sx={{ textTransform: "none" }}
-
                                 >
                                     Projeyi İptal Et
                                 </Button>
@@ -146,8 +175,6 @@ function ProjectManagement() {
                                     variant="contained"
                                     color="success"
                                     onClick={() => handleAction(restartProject)}
-                                    sx={{ textTransform: "none" }}
-
                                 >
                                     Projeyi Tekrar Başlat
                                 </Button>
@@ -156,9 +183,6 @@ function ProjectManagement() {
                                     variant="contained"
                                     color="error"
                                     onClick={() => handleAction(cancelProject)}
-                                    sx={{ textTransform: "none" }}
-
-
                                 >
                                     Projeyi İptal Et
                                 </Button>
@@ -170,13 +194,64 @@ function ProjectManagement() {
                                 variant="contained"
                                 color="success"
                                 onClick={() => handleAction(restartProject)}
-                                sx={{ textTransform: "none" }}
-
                             >
                                 Projeyi Tekrar Hayata Geçir
                             </Button>
                         )}
                     </Stack>
+
+                    {["IN_PROGRESS", "ON_HOLD"].includes(project.status) && (
+                        <>
+                            <Divider sx={{ my: 3 }} />
+
+                            <Typography
+                                variant="subtitle1"
+                                fontWeight={600}
+                                gutterBottom
+                            >
+                                Proje İlerlemesi
+                            </Typography>
+
+                            <LinearProgress
+                                variant="determinate"
+                                value={progress}
+                                sx={{ height: 10, borderRadius: 5, mb: 1 }}
+                            />
+
+                            <Typography
+                                variant="body2"
+                                align="right"
+                                sx={{ mb: 2 }}
+                            >
+                                %{Math.round(progress)}
+                            </Typography>
+
+                            <Slider
+                                value={progress}
+                                onChange={(e, value) => setProgress(value)}
+                                step={1}
+                                min={0}
+                                max={100}
+                                valueLabelDisplay="auto"
+                                disabled={progressLoading}
+                            />
+
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                sx={{ mt: 2 }}
+                                onClick={handleProgressUpdate}
+                                disabled={
+                                    progressLoading ||
+                                    progress === project.progress
+                                }
+                            >
+                                {progressLoading
+                                    ? "Güncelleniyor..."
+                                    : "İlerlemeyi Güncelle"}
+                            </Button>
+                        </>
+                    )}
                 </CardContent>
             </Card>
 

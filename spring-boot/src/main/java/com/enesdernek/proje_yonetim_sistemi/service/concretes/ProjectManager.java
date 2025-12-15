@@ -62,10 +62,10 @@ public class ProjectManager implements ProjectService {
 	private ProjectMapper projectMapper;
 
 	private ProjectStatus projectStatus;
-	
+
 	@Override
 	public ProjectDto getByProjectId(Long userId, Long projectId) {
-		
+
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
@@ -73,29 +73,25 @@ public class ProjectManager implements ProjectService {
 				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
 				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
 
-		
 		return this.projectMapper.toDto(project);
 	}
-
-	
 
 	@Override
 	public ProjectListDtoPagedResponse getProjectsByUserId(Long userId, int pageNo, int pageSize) {
 
-	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-	    Page<Project> projectPage = this.projectRepository.findAllByUserIdPaged(userId, pageable);
+		Page<Project> projectPage = this.projectRepository.findAllByUserIdPaged(userId, pageable);
 
-	    List<ProjectDto> projectDtos = this.projectMapper.toDtoList(projectPage.getContent());
+		List<ProjectDto> projectDtos = this.projectMapper.toDtoList(projectPage.getContent());
 
-	    ProjectListDtoPagedResponse response = new ProjectListDtoPagedResponse();
-	    response.setTotalElements(projectPage.getTotalElements());
-	    response.setTotalPages(projectPage.getTotalPages());
-	    response.setProjectDtos(projectDtos);
+		ProjectListDtoPagedResponse response = new ProjectListDtoPagedResponse();
+		response.setTotalElements(projectPage.getTotalElements());
+		response.setTotalPages(projectPage.getTotalPages());
+		response.setProjectDtos(projectDtos);
 
-	    return response;
+		return response;
 	}
-
 
 	@Override
 	public ProjectDto updateProject(Long userId, Long projectId, ProjectDtoIU projectDtoIU) {
@@ -109,15 +105,14 @@ public class ProjectManager implements ProjectService {
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-		
+
 		project.setDescription(projectDtoIU.getDescription());
 		project.setName(projectDtoIU.getName());
 		this.projectRepository.save(project);
-		
+
 		return this.projectMapper.toDto(project);
 	}
 
-	
 	@Override
 	public ProjectDto completeProject(Long userId, Long projectId) {
 		Project project = this.projectRepository.findById(projectId)
@@ -130,28 +125,28 @@ public class ProjectManager implements ProjectService {
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-		
+
 		ProjectStatus current = project.getStatus();
-		
-		if(current == ProjectStatus.CANCELLED) {
+
+		if (current == ProjectStatus.CANCELLED) {
 			throw new BusinessException("Proje zaten iptal edilmiş.");
 		}
-		
-		if(current == ProjectStatus.COMPLETED) {
+
+		if (current == ProjectStatus.COMPLETED) {
 			throw new BusinessException("Proje zaten tamamlanmış.");
 		}
-		
-		if(current == ProjectStatus.PLANNING) {
+
+		if (current == ProjectStatus.PLANNING) {
 			throw new BusinessException("Projeyi bitirmek için öncelikle başlatmalısınız.");
 		}
-		
+
 		project.setStatus(ProjectStatus.COMPLETED);
 		project.setEndDate(LocalDate.now());
 		this.projectRepository.save(project);
-		
-		return this.projectMapper.toDto(project);	
+
+		return this.projectMapper.toDto(project);
 	}
-	
+
 	@Override
 	public ProjectDto cancelProject(Long userId, Long projectId) {
 		Project project = this.projectRepository.findById(projectId)
@@ -164,22 +159,22 @@ public class ProjectManager implements ProjectService {
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-		
+
 		ProjectStatus current = project.getStatus();
-		
-		if(current == ProjectStatus.CANCELLED) {
+
+		if (current == ProjectStatus.CANCELLED) {
 			throw new BusinessException("Proje zaten iptal edilmiş.");
 		}
-		
-		if(current == ProjectStatus.COMPLETED) {
+
+		if (current == ProjectStatus.COMPLETED) {
 			throw new BusinessException("Proje zaten tamamlanmış.");
 		}
-		
+
 		project.setStatus(ProjectStatus.CANCELLED);
 		project.setEndDate(LocalDate.now());
 		this.projectRepository.save(project);
-		
-		return this.projectMapper.toDto(project);	
+
+		return this.projectMapper.toDto(project);
 	}
 
 	@Override
@@ -194,20 +189,20 @@ public class ProjectManager implements ProjectService {
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-		
+
 		ProjectStatus current = project.getStatus();
-		
-		if(current == ProjectStatus.PLANNING) {
+
+		if (current == ProjectStatus.PLANNING) {
 			throw new BusinessException("Projeyi beklemeye almak için öncelikle projeyi başlatmanız gerekir.");
 		}
-		
-		if(current == ProjectStatus.CANCELLED || current == ProjectStatus.COMPLETED) {
+
+		if (current == ProjectStatus.CANCELLED || current == ProjectStatus.COMPLETED) {
 			throw new BusinessException("Tamamlanmış veya iptal edilmiş projeyi beklemeye alamazsınız.");
 		}
-		
+
 		project.setStatus(ProjectStatus.ON_HOLD);
 		this.projectRepository.save(project);
-		
+
 		return this.projectMapper.toDto(project);
 	}
 
@@ -231,7 +226,7 @@ public class ProjectManager implements ProjectService {
 
 		return this.projectMapper.toDto(project);
 	}
-	
+
 	@Override
 	public ProjectDto restartProject(Long userId, Long projectId) {
 		Project project = this.projectRepository.findById(projectId)
@@ -240,18 +235,17 @@ public class ProjectManager implements ProjectService {
 		ProjectMember projectMember = this.projectMemberRepository
 				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
 				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
-		
+
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-		
+
 		project.setStatus(projectStatus.IN_PROGRESS);
-		
+
 		this.projectRepository.save(project);
 
 		return this.projectMapper.toDto(project);
 	}
-
 
 	@Override
 	@Transactional
@@ -331,21 +325,49 @@ public class ProjectManager implements ProjectService {
 		return this.projectMapper.toDto(project);
 	}
 
-
-
 	@Override
-	public void deleteProjectByProjectId(Long projectId) {
+	public void deleteProjectByProjectId(Long userId, Long projectId) {
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+		}
 		
+		deleteImage(userId, projectId);
+
 		this.projectRepository.deleteById(projectId);
-		
+
 	}
 
+	@Override
+	public ProjectDto updateProgress(Long userId, Long projectId, Double process) {
 
+		if (process == null || process < 0 || process > 100) {
+			throw new UnauthorizedActionException("İlerleme değeri geçersiz");
+		}
 
-	
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-	
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
 
-	
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+		}
+
+		System.out.println("[INFO] ProjectId=" + projectId + " progress güncelleniyor → " + process);
+
+		project.setProgress(process);
+		this.projectRepository.save(project);
+
+		return this.projectMapper.toDto(project);
+	}
 
 }

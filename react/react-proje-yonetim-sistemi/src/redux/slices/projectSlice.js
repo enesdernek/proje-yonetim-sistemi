@@ -311,6 +311,61 @@ export const restartProject = createAsyncThunk(
     }
 );
 
+export const updateProjectProgress = createAsyncThunk(
+    "project/updateProjectProgress",
+    async ({ projectId, process, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/update-progress?projectId=${projectId}&process=${process}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje ilerlemesi güncellenirken hata oluştu."
+            );
+        }
+    }
+);
+
+export const deleteProjectByProjectId = createAsyncThunk(
+    "project/deleteProjectByProjectId",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete(
+                `${API_URL_PROJECT}/delete-project-by-project-id?projectId=${projectId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            // SuccessResult (data yok)
+            return { projectId };
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje silinirken hata oluştu."
+            );
+        }
+    }
+);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -520,10 +575,8 @@ export const projectSlice = createSlice({
 
                 const updatedProject = action.payload;
 
-                // Detay sayfası
                 state.project = updatedProject;
 
-                // Listeyi güncelle
                 const index = state.projects.findIndex(
                     (p) => p.projectId === updatedProject.projectId
                 );
@@ -535,6 +588,50 @@ export const projectSlice = createSlice({
             .addCase(restartProject.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(updateProjectProgress.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProjectProgress.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(updateProjectProgress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Proje ilerlemesi güncellenemedi.";
+            })
+            .addCase(deleteProjectByProjectId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteProjectByProjectId.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const { projectId } = action.payload;
+
+                if (state.project?.projectId === projectId) {
+                    state.project = null;
+                }
+
+                state.projects = state.projects.filter(
+                    (p) => p.projectId !== projectId
+                );
+            })
+            .addCase(deleteProjectByProjectId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Proje silinemedi.";
             })
     }
 })

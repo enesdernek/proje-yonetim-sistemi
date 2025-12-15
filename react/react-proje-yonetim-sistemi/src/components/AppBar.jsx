@@ -15,6 +15,7 @@ import { logOut } from '../redux/slices/userSlice';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import usersPlaceholderImage from "../files/placeholder-images/user-placeholder.jpg";
+import { getUsersRecievedConnectionRequests } from '../redux/slices/connectionRequestSlice';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -67,6 +68,18 @@ export default function MenuAppBar({ onMenuClick }) {
   const pendingRequestCount = connectionRequests.filter(
     (req) => req.status === "PENDING"
   ).length;
+
+  React.useEffect(() => {
+    if (isAuthenticated && token) {
+      dispatch(
+        getUsersRecievedConnectionRequests({
+          token,
+          pageNo: 1,
+          pageSize: 10, 
+        })
+      );
+    }
+  }, [dispatch, isAuthenticated, token]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>

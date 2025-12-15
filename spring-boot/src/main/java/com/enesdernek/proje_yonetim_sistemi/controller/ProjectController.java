@@ -37,10 +37,12 @@ public class ProjectController {
 	private ProjectService projectService;
 	
 	@DeleteMapping("/delete-project-by-project-id")
-	@PreAuthorize("hasAnyRole('ADMIN')")
-	public ResponseEntity<SuccessResult> deleteProjectByProjectId(Long projectId) {
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessResult> deleteProjectByProjectId(Authentication authentication,Long projectId) {
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
 		
-		this.projectService.deleteProjectByProjectId(projectId);
+		this.projectService.deleteProjectByProjectId(userId,projectId);
 		SuccessResult result = new SuccessResult("Proje başarıyla silindi.");
 		
 		return new ResponseEntity<>(result,HttpStatus.OK);
@@ -187,6 +189,16 @@ public class ProjectController {
 		ProjectDto createdProject = projectService.create(userId, projectDtoIU, file);
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new SuccessDataResult<>(createdProject, "Proje başarıyla oluşturuldu."));
+	}
+	
+	@PutMapping("/update-progress")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<ProjectDto>> updateProgress(Authentication authentication,@RequestParam Long projectId,@RequestParam Double process) {
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
+		
+		SuccessDataResult<ProjectDto>result = new SuccessDataResult<ProjectDto>(this.projectService.updateProgress(userId, projectId, process), "Proje ilerlemesi başarıyla güncellendi.");
+		return new ResponseEntity<>(result,HttpStatus.OK);
 	}
 
 }

@@ -242,7 +242,7 @@ function Project() {
                                     <EditIcon sx={{ mr: 1 }} /> Projeyi Güncelle
                                 </Button>
 
-                                <Button variant="contained" color="primary" sx={{ textTransform: "none" }}>
+                                <Button onClick={() => navigate(`/projects/${projectId}/project-settings`)} variant="contained" color="primary" sx={{ textTransform: "none" }}>
                                     <SettingsIcon sx={{ mr: 1 }} /> Proje Ayarları
                                 </Button>
 
