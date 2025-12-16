@@ -15,8 +15,8 @@ function Sidebar() {
     const location = useLocation();
 
     const items = [
-        { id: "projects", label: "Projeler", icon: <DashboardIcon />, path: "/projects" },
-        { id: "tasks", label: "Görevler", icon: <AssignmentIcon />, path: "/tasks" },
+        { id: "projects", label: "Projelerim", icon: <DashboardIcon />, path: "/projects" },
+        { id: "tasks", label: "Görevlerim", icon: <AssignmentIcon />, path: "/tasks" },
     ];
 
     // URL path'e göre selected item otomatik belirlensin

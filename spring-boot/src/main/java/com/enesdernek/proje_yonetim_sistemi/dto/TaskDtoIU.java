@@ -29,7 +29,7 @@ public class TaskDtoIU {
 	private LocalDate dueDate;
 
 	@NotNull
-	private Long assignedUserId;
+	private Long assignedMemberId;
 	
 	@NotNull
 	private Long projectId;

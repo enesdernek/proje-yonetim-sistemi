@@ -22,23 +22,26 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 		    value = """
 		        SELECT * FROM tasks 
 		        WHERE project_id = :projectId 
-		          AND assigned_user_id = :userId 
+		          AND assigned_member_id = :memberId
 		        ORDER BY task_id DESC
 		        """,
 		    countQuery = """
 		        SELECT COUNT(*) FROM tasks 
 		        WHERE project_id = :projectId 
-		          AND assigned_user_id = :userId
+		          AND assigned_member_id = :memberId
 		        """,
 		    nativeQuery = true
 		)
-	Page<Task> getTasksByProjectIdAndProjectMemberId(@Param("projectId") Long projectId,
-			@Param("userId") Long userId, Pageable pageable);
+		Page<Task> getTasksByProjectIdAndAssignedMemberId(
+		    @Param("projectId") Long projectId,
+		    @Param("memberId") Long memberId,
+		    Pageable pageable
+		);
 
 	@Query(value = "SELECT COUNT(*) FROM tasks WHERE project_id = :projectId", nativeQuery = true)
 	long countTasksByProjectId(@Param("projectId") Long projectId);
 	
-    Page<Task> findByAssignedUser_User_UserId(Long userId,Pageable pageable);
+	Page<Task> findByAssignedMember_User_UserId(Long userId, Pageable pageable);
     
     Page<Task> findByProject_ProjectIdAndStatus(
             Long projectId,

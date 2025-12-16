@@ -60,17 +60,14 @@ public class TaskManager implements TaskService {
 			throw new UnauthorizedActionException("Görev oluşturma yetkiniz yok.");
 		}
 
-		ProjectMember assignedMember = this.projectMemberRepository
-				.findByUser_UserIdAndProject_ProjectId(taskDtoIU.getAssignedUserId(), taskDtoIU.getProjectId())
-				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-
+		ProjectMember assignedMember = this.projectMemberRepository.findById(taskDtoIU.getAssignedMemberId()).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
 		Task task = this.taskMapper.toEntity(taskDtoIU);
 
 		task.setCreator(manager);
 
 		task.setProject(project);
 
-		task.setAssignedUser(assignedMember);
+		task.setAssignedMember(assignedMember);
 
 		this.taskRepository.save(task);
 
@@ -120,8 +117,12 @@ public class TaskManager implements TaskService {
 
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-		Page<Task> tasks = this.taskRepository.getTasksByProjectIdAndProjectMemberId(projectId, member.getMemberId(),
-				pageable);
+		Page<Task> tasks =
+			    this.taskRepository.getTasksByProjectIdAndAssignedMemberId(
+			        projectId,
+			        member.getMemberId(),
+			        pageable
+			    );
 
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
@@ -137,8 +138,11 @@ public class TaskManager implements TaskService {
 		
 		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
 		
-		Page <Task> tasks = this.taskRepository.findByAssignedUser_User_UserId(userId, null);
-		
+		Page<Task> tasks =
+			    this.taskRepository.findByAssignedMember_User_UserId(
+			        userId,
+			        pageable
+			    );		
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
 		
@@ -201,7 +205,7 @@ public class TaskManager implements TaskService {
 
 		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
 		
-		if(task.getAssignedUser().getMemberId()!= authUserId) {
+		if(task.getAssignedMember().getMemberId()!= authUserId) {
 			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
 		}
 		

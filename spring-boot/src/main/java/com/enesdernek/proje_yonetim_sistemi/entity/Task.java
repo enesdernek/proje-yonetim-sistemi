@@ -30,8 +30,8 @@ public class Task {
     private LocalDate dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_user_id")
-    private ProjectMember assignedUser;
+    @JoinColumn(name = "assigned_member_id", nullable = false)
+    private ProjectMember assignedMember;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
