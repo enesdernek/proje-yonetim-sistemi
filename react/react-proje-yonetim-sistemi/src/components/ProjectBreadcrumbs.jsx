@@ -23,6 +23,7 @@ function ProjectBreadcrumbs() {
     "create-project": "Proje Oluştur",
     "project-settings": "Proje Ayarları",
     "create-task": "Görev Oluştur",
+    "tasks": "Görevler",
   };
 
   return (

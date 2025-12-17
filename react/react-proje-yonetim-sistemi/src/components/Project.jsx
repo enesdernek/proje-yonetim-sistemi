@@ -12,6 +12,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } f
 import { changeMembersRole, deleteMemberFromProject, leaveProject } from "../redux/slices/projectMemberSlice";
 import EditIcon from '@mui/icons-material/Edit';
 import { Tooltip } from "@mui/material";
+import PreviewIcon from '@mui/icons-material/Preview';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -304,16 +305,30 @@ function Project() {
 
                     <Divider sx={{ my: 3 }} />
 
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-                        Proje Üyeleri
-                        {
-                            userRole === "MANAGER" && (
-                                <Button onClick={() => navigate(`/projects/${project.projectId}/add-member`)} variant="contained" color="success" sx={{ textTransform: "none", ml: 1, padding: "5px", paddingRight: "10px" }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Typography variant="h6" fontWeight="bold">
+                            Proje Üyeleri
+                            {userRole === "MANAGER" && (
+                                <Button
+                                    onClick={() => navigate(`/projects/${project.projectId}/add-member`)}
+                                    variant="contained"
+                                    color="success"
+                                    sx={{ textTransform: "none", ml: 1, padding: "5px 10px" }}
+                                >
                                     <AddIcon sx={{ mr: 0 }} /> Üye Ekle
-                                </Button>)
-                        }
+                                </Button>
+                            )}
+                        </Typography>
 
-                    </Typography>
+                        <Button
+                            onClick={() => navigate(`/projects/${project.projectId}/tasks`)}
+                            variant="contained"
+                            sx={{ textTransform: "none",backgroundColor:"#FDCC0D",color:"black" }}
+                            
+                        >
+                          <PreviewIcon sx={{mr:1}}/>  Bütün Görevleri Görüntüle
+                        </Button>
+                    </Box>
 
                     <Stack
                         direction={{ xs: "column", sm: "row" }}
@@ -467,7 +482,7 @@ function Project() {
                                                             navigate("/projects/" + projectId + "/create-task/" + m.memberId)
                                                         }
                                                     >
-                                                        Görev Ver
+                                                        Görevleri Görüntüle
                                                     </Button>
                                                 </span>
                                             </Tooltip>

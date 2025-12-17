@@ -20,13 +20,13 @@ public interface TaskService {
 	
 	public TaskDtoPagedResponse getUsersAllTasks( Long userId, int pageNo, int pageSize);
 
-	public TaskDtoPagedResponse getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize);
+	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize);
 	
 	public TaskDto updateTask(Long authUserId, Long taskId, TaskDtoIU taskDtoIU);
 
 	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId);
 	
-	//
+	public TaskDto changeTaskStatusToDone(Long authUserId,Long taskId);
 	
 	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus);
 	

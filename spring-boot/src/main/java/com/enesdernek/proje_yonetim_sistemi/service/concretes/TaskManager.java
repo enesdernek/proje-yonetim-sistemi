@@ -155,7 +155,7 @@ public class TaskManager implements TaskService {
 	}
 
 	@Override
-	public TaskDtoPagedResponse getAllTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize) {
+	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize) {
 		
 		ProjectMember member = this.projectMemberRepository.findById(authUserId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
 		
@@ -189,9 +189,11 @@ public class TaskManager implements TaskService {
 		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
 		
 		task.setDescription(taskDtoIU.getDescription());
+		task.setStartDate(taskDtoIU.getStartDate());
 		task.setDueDate(taskDtoIU.getDueDate());
 		task.setTitle(taskDtoIU.getTitle());
 		task.setUpdatedAt(LocalDateTime.now());
+		task.setStatus(TaskStatus.TODO);
 		
 		Task newTask = this.taskRepository.save(task);
 		
@@ -245,6 +247,21 @@ public class TaskManager implements TaskService {
 		}
 		
 		this.taskRepository.delete(task);
+	}
+
+	@Override
+	public TaskDto changeTaskStatusToDone(Long authUserId, Long taskId) {
+		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
+		
+		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+		}
+		
+		task.setStatus(TaskStatus.DONE);
+		this.taskRepository.save(task);
+
+		return this.taskMapper.toDto(task);
 	}
 
 }

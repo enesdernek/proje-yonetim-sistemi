@@ -56,6 +56,18 @@ public class TaskController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	@PutMapping("/change-task-status-to-done")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToDone(Authentication auth, Long taskId) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDto> result = new SuccessDataResult<>(this.taskService.changeTaskStatusToDone(authUserId, taskId),
+				"Görev başarıyla tamamlandı.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	@PutMapping("/change-task-status-to-in-progress")
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToInProgress(Authentication auth, Long taskId) {
@@ -70,7 +82,7 @@ public class TaskController {
 	
 	@PutMapping("/update-task")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<TaskDto>> updateTask(Authentication auth, Long taskId,@Valid TaskDtoIU taskDtoIU) {
+	public ResponseEntity<SuccessDataResult<TaskDto>> updateTask(Authentication auth, Long taskId,@Valid @RequestBody TaskDtoIU taskDtoIU) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
 		
@@ -80,14 +92,14 @@ public class TaskController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	@GetMapping("get-all-tasks-by-status")
+	@GetMapping("get-all-project-tasks-by-status")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllTasksByStatus(Authentication auth, Long projectId, TaskStatus status,int pageNo, int pageSize) {
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllProjectTasksByStatus(Authentication auth, Long projectId, TaskStatus status,int pageNo, int pageSize) {
 		
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
 		
-		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(this.taskService.getAllTasksByStatus(authUserId, projectId, status, pageNo, pageSize),
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(this.taskService.getAllProjectTasksByStatus(authUserId, projectId, status, pageNo, pageSize),
 				"Görevler başarıyla getirildi");
 
 		return new ResponseEntity<>(result, HttpStatus.OK);

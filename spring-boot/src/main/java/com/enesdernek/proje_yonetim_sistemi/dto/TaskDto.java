@@ -24,7 +24,7 @@ public class TaskDto {
 	    private LocalDate startDate;
 	    private LocalDate dueDate;
 
-	    private ProjectMemberDto assignedUser;
+	    private ProjectMemberDto assignedMember;
 	    
 	    private ProjectMemberDto creator;
 
