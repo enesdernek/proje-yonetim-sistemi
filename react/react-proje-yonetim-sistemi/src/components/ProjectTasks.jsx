@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     AppBar, Toolbar, Typography, Box, Select, MenuItem,
     Table, TableBody, TableCell, TableHead, TableRow,
@@ -13,7 +13,7 @@ import {
     getProjectTasksByTaskStatus,
     deleteTask,
     updateTask,
-    changeTaskStatusToDone  // thunk import
+    changeTaskStatusToDone  
 } from "../redux/slices/taskSlice";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -28,6 +28,7 @@ function ProjectTasks() {
     const token = useSelector((state) => state.user.token);
     const { tasks, totalPages, loading } = useSelector((state) => state.task);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [page, setPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState("");
@@ -38,7 +39,7 @@ function ProjectTasks() {
     const [formErrors, setFormErrors] = useState({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     // Görevleri getir
     const fetchTasks = () => {
@@ -192,8 +193,21 @@ function ProjectTasks() {
                             <TableRow key={task.taskId} sx={{ backgroundColor: statusColorMap[task.status] || "transparent" }}>
                                 <TableCell>
                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <Avatar src={task.assignedMember?.userDto?.profileImageUrl ? BASE_URL + task.assignedMember.userDto.profileImageUrl : userPlaceholderImage} sx={{ width: 32, height: 32 }} />
-                                        <Typography>{task.assignedMember?.userDto?.username || "Atanmamış"}</Typography>
+                                        <Avatar
+                                            onClick={() => navigate(`/projects/${projectId}/${task.assignedMember.memberId}`)}
+                                            src={task.assignedMember?.userDto?.profileImageUrl ? BASE_URL + task.assignedMember.userDto.profileImageUrl : userPlaceholderImage} sx={{
+                                                width: 32, height: 32, "&:hover": {
+                                                    cursor: "pointer",
+                                                }
+                                            }} />
+                                        <Typography
+                                            onClick={() => navigate(`/projects/${projectId}/${task.assignedMember.memberId}`)}
+                                            sx={{
+                                                "&:hover": {
+                                                    textDecoration: "underline",
+                                                    cursor: "pointer",
+                                                }
+                                            }}>{task.assignedMember?.userDto?.username || "Atanmamış"}</Typography>
                                     </Box>
                                 </TableCell>
                                 <TableCell>{task.title}</TableCell>

@@ -26,7 +26,7 @@ const persistConfig = {
     key: "root",
     storage,
     version: 1,
-    blacklist: ['notelist', 'note']
+    blacklist: ['connection', 'connectionRequest', 'projectMember', 'task',"project"]
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

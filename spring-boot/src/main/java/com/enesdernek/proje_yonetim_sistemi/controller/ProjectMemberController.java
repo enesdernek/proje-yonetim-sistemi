@@ -25,83 +25,101 @@ import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
 
 @RestController
-@RequestMapping(path="/api/project-members")
+@RequestMapping(path = "/api/project-members")
 public class ProjectMemberController {
-	
+
 	@Autowired
 	private ProjectMemberService projectMemberService;
-	
+
 	@DeleteMapping("/leave-project")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessResult> leaveProject(Authentication auth,@RequestParam Long projectId) {
+	public ResponseEntity<SuccessResult> leaveProject(Authentication auth, @RequestParam Long projectId) {
 		User user = (User) auth.getPrincipal();
 		Long userId = user.getUserId();
-		
+
 		this.projectMemberService.leaveProject(userId, projectId);
 		SuccessResult result = new SuccessResult("Kullanıcı başarılı bir şekilde projeden ayrıldı.");
-		return new ResponseEntity<>(result,HttpStatus.OK);
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/change-members-role")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> changeMembersRole(Authentication auth,@RequestParam Long roleChangedUserId,@RequestParam Long projectId,@RequestParam ProjectRole role) {
+	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> changeMembersRole(Authentication auth,
+			@RequestParam Long roleChangedUserId, @RequestParam Long projectId, @RequestParam ProjectRole role) {
+		User user = (User) auth.getPrincipal();
+		Long userId = user.getUserId();
+
+		ProjectMemberDto dto = this.projectMemberService.changeMembersRole(userId, roleChangedUserId, projectId, role);
+		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<>(dto,
+				"Üyenin rolü başarıyla değiştirildi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	@GetMapping("/get-by-member-id-and-project-id")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> getByMemberIdAndProjectId(Authentication auth,Long memberId, Long projectId) {
 		User user = (User) auth.getPrincipal();
 		Long userId = user.getUserId();
 		
-		ProjectMemberDto dto = this.projectMemberService.changeMembersRole(userId, roleChangedUserId, projectId, role);
-		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<>(dto,"Üyenin rolü başarıyla değiştirildi.");
-		
-		return new ResponseEntity<>(result,HttpStatus.OK);
+		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<ProjectMemberDto>(this.projectMemberService.getByMemberIdAndProjectId(memberId, projectId), "Üye getirildi.");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+
 	}
-	
+
 	@DeleteMapping("/delete-member-by-user-id-and-project-id")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> deleteMemberFromProject(Authentication auth, @RequestParam Long deletedUserId,@RequestParam Long projectId){
+	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> deleteMemberFromProject(Authentication auth,
+			@RequestParam Long deletedUserId, @RequestParam Long projectId) {
 		User user = (User) auth.getPrincipal();
 		Long userId = user.getUserId();
-		
-		List<ProjectMemberDto> dtos = this.projectMemberService.deleteMemberFromProject(userId, deletedUserId, projectId);
-		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos,"Üye başarıyla silindi.");
-		
-		return new ResponseEntity<>(result,HttpStatus.OK);
+
+		List<ProjectMemberDto> dtos = this.projectMemberService.deleteMemberFromProject(userId, deletedUserId,
+				projectId);
+		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos, "Üye başarıyla silindi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/get-members")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> getMembersByProjectId(Authentication auth,@RequestParam Long projectId) {
+	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> getMembersByProjectId(Authentication auth,
+			@RequestParam Long projectId) {
 		User user = (User) auth.getPrincipal();
 		Long userId = user.getUserId();
-		
-		List<ProjectMemberDto> dtos = this.projectMemberService.getMembersByProjectId(userId, projectId);
-		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos,"Üyeler başarıyla getirildi.");
-		
-		return new ResponseEntity<>(result,HttpStatus.OK);
 
+		List<ProjectMemberDto> dtos = this.projectMemberService.getMembersByProjectId(userId, projectId);
+		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos, "Üyeler başarıyla getirildi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 
 	}
-	
+
 	@GetMapping("get-by-user-id-and-project-id")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> getByUserIdAndProjectId(@RequestParam Long userId,@RequestParam Long projectId) {
-		
+	public ResponseEntity<SuccessDataResult<ProjectMemberDto>> getByUserIdAndProjectId(@RequestParam Long userId,
+			@RequestParam Long projectId) {
+
 		ProjectMemberDto dto = this.projectMemberService.getByUserIdAndProjectId(userId, projectId);
-		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<>(dto,"Kullanıcı başarıyla getirildi");
-		
-		return new ResponseEntity<>(result,HttpStatus.OK);
+		SuccessDataResult<ProjectMemberDto> result = new SuccessDataResult<>(dto, "Kullanıcı başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 
 	}
-	
+
 	@PostMapping("/add-members")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> add(@RequestParam Long projectId,@RequestBody  List<ProjectMemberRequest>requests,Authentication authentication){
-		
+	public ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>> add(@RequestParam Long projectId,
+			@RequestBody List<ProjectMemberRequest> requests, Authentication authentication) {
+
 		User user = (User) authentication.getPrincipal();
 		Long adderId = user.getUserId();
-		
+
 		List<ProjectMemberDto> dtos = this.projectMemberService.add(projectId, adderId, requests);
-		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos,"Üye veya üyeler başarıyla eklendi.");
-		
-		return new ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>>(result,HttpStatus.OK);
+		SuccessDataResult<List<ProjectMemberDto>> result = new SuccessDataResult<>(dtos,
+				"Üye veya üyeler başarıyla eklendi.");
+
+		return new ResponseEntity<SuccessDataResult<List<ProjectMemberDto>>>(result, HttpStatus.OK);
 	}
 
 }

@@ -18,14 +18,14 @@ function CreateTask() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { projectId, assignedMemberId } = useParams();
+  const { projectId, memberId } = useParams();
   const token = useSelector((state) => state.user.token);
 
   const { loading } = useSelector((state) => state.task);
   const { members } = useSelector((state) => state.projectMember);
 
   const assignedMember = members?.find(
-    (m) => String(m.memberId) === String(assignedMemberId)
+    (m) => String(m.memberId) === String(memberId)
   );
 
   const [form, setForm] = useState({
@@ -84,7 +84,7 @@ function CreateTask() {
       status: "TODO",
       startDate: form.startDate || null,
       dueDate: form.dueDate || null,
-      assignedMemberId: Number(assignedMemberId),
+      assignedMemberId: Number(memberId),
       projectId: Number(projectId),
     };
 
@@ -98,7 +98,7 @@ function CreateTask() {
       });
 
       setTimeout(() => {
-        navigate(`/projects/${projectId}`);
+        navigate(`/projects/${projectId}/tasks`);
       }, 1500);
     } catch (errMessage) {
       setSnackbar({

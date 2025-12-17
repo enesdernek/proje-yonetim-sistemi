@@ -53,6 +53,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     void deleteByAssignedMember(ProjectMember member);
     void deleteByCreator(ProjectMember member);
     void deleteAllByProject_ProjectId(Long projectId);
+    
+    
 
     
 

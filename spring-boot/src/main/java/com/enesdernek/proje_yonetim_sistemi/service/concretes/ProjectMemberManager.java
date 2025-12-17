@@ -210,8 +210,16 @@ public class ProjectMemberManager implements ProjectMemberService {
 		if (leavingRole == ProjectRole.MANAGER && managerCount <= 1) {
 			throw new UnauthorizedActionException("Projede en az 1 adet yönetici (manager) bulunmalıdır.");
 		}
+		
+		this.taskRepository.deleteByAssignedMember(member);
 
 		this.projectMemberRepository.deleteMember(userId, projectId);
+	}
+
+	@Override
+	public ProjectMemberDto getByMemberIdAndProjectId(Long memberId, Long projectId) {
+		ProjectMember member = this.projectMemberRepository.findByMemberIdAndProject_ProjectId(memberId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
+		return this.projectMemberMapper.toDto(member);
 	}
 
 }

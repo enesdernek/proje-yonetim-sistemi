@@ -88,7 +88,7 @@ export const getProjectTasksByTaskStatus = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            return response.data.data; 
+            return response.data.data;
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Görevler getirilirken bir hata oluştu."
@@ -111,7 +111,7 @@ export const deleteTask = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            return taskId; 
+            return taskId;
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Görev silinirken bir hata oluştu."
@@ -156,9 +156,34 @@ export const changeTaskStatusToDone = createAsyncThunk(
         try {
             const response = await axios.put(
                 `${API_URL_TASK}/change-task-status-to-done`,
-                null, 
+                null,
                 {
                     params: { taskId },
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Görev durumu güncellenirken bir hata oluştu."
+            );
+        }
+    }
+);
+
+export const getProjectTasksAssignedToMember = createAsyncThunk(
+    "task/getProjectTasksAssignedToMember",
+    async ({ projectId, pageNo = 1, pageSize = 10, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_TASK}/get-all-project-tasks-assigned-to-member`,
+                {
+                    params: { projectId, pageNo, pageSize },
                     headers: { Authorization: `Bearer ${token}` }
                 }
             );
@@ -170,11 +195,33 @@ export const changeTaskStatusToDone = createAsyncThunk(
             return response.data.data; 
         } catch (err) {
             return rejectWithValue(
-                err.response?.data?.message || "Görev durumu güncellenirken bir hata oluştu."
+                err.response?.data?.message || "Görevler getirilirken bir hata oluştu."
             );
         }
     }
 );
+
+export const getAllProjectMembersTasksByProject = createAsyncThunk(
+    "task/getAllProjectMembersTasksByProject",
+    async ({ projectId, assignedMemberId, pageNo = 1, pageSize = 10, token }, { rejectWithValue }) => {
+        console.log(projectId,assignedMemberId,pageNo,pageSize,token)
+        try {
+            const response = await axios.get(`${API_URL_TASK}/get-all-project-members-tasks-by-project`, {
+                params: { projectId, assignedMemberId, pageNo, pageSize },
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data; 
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || "Görevler getirilirken bir hata oluştu.");
+        }
+    }
+);
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const taskSlice = createSlice({
@@ -211,7 +258,7 @@ export const taskSlice = createSlice({
             })
             .addCase(getTasksByProjectId.fulfilled, (state, action) => {
                 state.loading = false;
-                state.tasks = action.payload.taskDtos; 
+                state.tasks = action.payload.taskDtos;
                 state.totalPages = action.payload.totalPages;
                 state.totalElements = action.payload.totalElements;
             })
@@ -278,13 +325,40 @@ export const taskSlice = createSlice({
                     state.tasks[index] = updatedTask;
                 }
 
-                state.task = updatedTask; 
+                state.task = updatedTask;
             })
             .addCase(changeTaskStatusToDone.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Görev durumu güncellenemedi.";
             })
-
+            .addCase(getProjectTasksAssignedToMember.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getProjectTasksAssignedToMember.fulfilled, (state, action) => {
+                state.loading = false;
+                state.tasks = action.payload.taskDtos; 
+                state.totalPages = action.payload.totalPages;
+                state.totalElements = action.payload.totalElements;
+            })
+            .addCase(getProjectTasksAssignedToMember.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
+            })
+             .addCase(getAllProjectMembersTasksByProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllProjectMembersTasksByProject.fulfilled, (state, action) => {
+                state.loading = false;
+                state.tasks = action.payload.taskDtos || [];
+                state.totalPages = action.payload.totalPages || 0;
+                state.totalElements = action.payload.totalElements || 0;
+            })
+            .addCase(getAllProjectMembersTasksByProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
+            });
 
     }
 });

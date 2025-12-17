@@ -16,6 +16,8 @@ public interface ProjectMemberService {
 	
 	public ProjectMemberDto getByUserIdAndProjectId(Long userId,Long projectId);
 	
+	public ProjectMemberDto getByMemberIdAndProjectId(Long memberId,Long projectId);
+	
 	List<ProjectMemberDto> getMembersByProjectId(Long userId, Long projectId);
 	
 	public List<ProjectMemberDto> deleteMemberFromProject(Long userId,Long deletedUserId,Long projectId);

@@ -33,6 +33,7 @@ import ProjectCreate from '../components/ProjectCreate'
 import ProjectSettings from '../components/ProjectSettings'
 import CreateTask from '../components/CreateTask'
 import ProjectTasks from '../components/ProjectTasks'
+import ProjectMembersTasks from '../components/ProjectMembersTasks'
 
 
 function MainContent({ drawerOpen, toggleDrawer }) {
@@ -65,7 +66,8 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="projects/:projectId/update-project" element={<ProjectUpdate />} />
         <Route path="projects/:projectId/manage-project" element={<ProjectManagement />} />
         <Route path="projects/:projectId/project-settings" element={<ProjectSettings />} />
-        <Route path="projects/:projectId/create-task/:assignedMemberId" element={<CreateTask />} />
+        <Route path="projects/:projectId/:memberId" element={<ProjectMembersTasks />} />
+        <Route path="projects/:projectId/:memberId/create-task" element={<CreateTask />} />
         <Route path="projects/:projectId/tasks" element={<ProjectTasks />} />
         <Route path="projects/create-project" element={<ProjectCreate />} />
         <Route path="tasks" element={<TaskList />} />

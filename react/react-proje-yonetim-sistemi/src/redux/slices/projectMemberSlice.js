@@ -177,6 +177,34 @@ export const leaveProject = createAsyncThunk(
     }
 );
 
+export const getProjectMemberByMemberIdAndProjectId = createAsyncThunk(
+    "projectMember/getByMemberIdAndProjectId",
+    async ({ memberId, projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_PROJECT_MEMBER}/get-by-member-id-and-project-id`,
+                {
+                    params: { memberId, projectId },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data; 
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje üyesi (memberId + projectId) getirilirken hata oluştu."
+            );
+        }
+    }
+);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const projectMemberSlice = createSlice({
@@ -313,7 +341,28 @@ export const projectMemberSlice = createSlice({
             .addCase(leaveProject.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+            .addCase(getProjectMemberByMemberIdAndProjectId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getProjectMemberByMemberIdAndProjectId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.projectMember = action.payload;
+
+                const projectId = action.payload.projectDto?.projectId;
+                const role = action.payload.role;
+
+                if (!state.projectRoles) state.projectRoles = {};
+
+                if (projectId) {
+                    state.projectRoles[projectId] = role;
+                }
+            })
+            .addCase(getProjectMemberByMemberIdAndProjectId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     }
 })
 

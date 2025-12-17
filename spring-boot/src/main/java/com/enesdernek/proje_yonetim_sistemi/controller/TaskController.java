@@ -158,15 +158,29 @@ public class TaskController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
-	@GetMapping("/get-all-project-tasks-assigned-to-member")
+	@GetMapping("/get-authenticated-members-tasks-by-project")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getProjectTasksAssignedToProjectMember(
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAuthenticatedMembersTasksByProject(
 			Authentication auth, Long projectId, int pageNo, int pageSize) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
 
 		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
-				this.taskService.getProjectTasksAssignedToProjectMember(authUserId, projectId, pageNo, pageSize),
+				this.taskService.getAuthenticatedMembersTasksByProject(authUserId, projectId, pageNo, pageSize),
+				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@GetMapping("/get-all-project-members-tasks-by-project")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllProjectMembersTasksByProject(Authentication auth, Long assignedMemberId, Long projectId,
+			int pageNo, int pageSize) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
+				this.taskService.getAllProjectMembersTaskByProject(authUserId, assignedMemberId,projectId, pageNo, pageSize),
 				"Görevler başarıyla getirildi");
 
 		return new ResponseEntity<>(result, HttpStatus.OK);

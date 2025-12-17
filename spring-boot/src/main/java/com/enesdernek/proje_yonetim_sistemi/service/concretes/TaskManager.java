@@ -106,11 +106,10 @@ public class TaskManager implements TaskService {
 	}
 
 	@Override
-	public TaskDtoPagedResponse getProjectTasksAssignedToProjectMember(Long authUserId, Long projectId, int pageNo,
+	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo,
 			int pageSize) {
 
-		ProjectMember member = this.projectMemberRepository.findById(authUserId)
-				.orElseThrow(() -> new NotFoundException("Üye bulunamadı."));
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
 
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı"));
@@ -132,6 +131,39 @@ public class TaskManager implements TaskService {
 		response.setTotalPages(tasks.getTotalPages());
 		return response;
 	}
+	
+	@Override
+	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId, Long assignedMemberId, Long projectId,
+			int pageNo, int pageSize) {
+		ProjectMember manager = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+		
+		ProjectMember assignedMember = this.projectMemberRepository.findByMemberIdAndProject_ProjectId(assignedMemberId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı"));
+		
+		if(manager.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Yetkiniz yok");
+		}
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+		Page<Task> tasks =
+			    this.taskRepository.getTasksByProjectIdAndAssignedMemberId(
+			        projectId,
+			        assignedMember.getMemberId(),
+			        pageable
+			    );
+
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+		response.setTotalPages(tasks.getTotalPages());
+		return response;
+	}
+
 
 	public TaskDtoPagedResponse getUsersAllTasks(Long userId, int pageNo, int pageSize) {
 		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
@@ -264,4 +296,5 @@ public class TaskManager implements TaskService {
 		return this.taskMapper.toDto(task);
 	}
 
+	
 }

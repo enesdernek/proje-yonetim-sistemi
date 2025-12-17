@@ -16,7 +16,7 @@ public interface TaskService {
 
 	public TaskDtoPagedResponse getTasksByProjectId(Long authUserId, Long projectId, int pageNo, int pageSize);
 
-	public TaskDtoPagedResponse getProjectTasksAssignedToProjectMember(Long authUserId, Long projectId, int pageNo, int pageSize);
+	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo, int pageSize);
 	
 	public TaskDtoPagedResponse getUsersAllTasks( Long userId, int pageNo, int pageSize);
 
@@ -31,4 +31,7 @@ public interface TaskService {
 	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus);
 	
 	public void deleteTask(Long authUserId, Long taskId);
+	
+	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId,Long assignedMemberId,Long projectId,int pageNo, int pageSize);
+
 }

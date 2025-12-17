@@ -19,6 +19,8 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 
 	boolean existsByProjectAndUser(Project project, User user);
 	
+	Optional<ProjectMember> findByMemberIdAndProject_ProjectId(Long memberId,Long projectId);
+	
 	Optional<ProjectMember> findByUser_UserIdAndProject_ProjectId(Long userId,Long projectId);
 	
 	List<ProjectMember> getAllByProject_ProjectId(@Param("projectId") Long projectId);
@@ -26,7 +28,7 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 	Optional<ProjectMember> deleteByUser_UserIdAndProject_ProjectId(Long deletedUserId,Long projectId);
 	
 	long countByProject_ProjectIdAndRole(Long projectId, ProjectRole role);
-	
+		
 	@Query(
 		    value = "DELETE FROM project_members WHERE user_id = :userId AND project_id = :projectId",
 		    nativeQuery = true

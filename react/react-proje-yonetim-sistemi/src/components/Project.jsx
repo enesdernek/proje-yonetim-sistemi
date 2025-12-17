@@ -320,14 +320,20 @@ function Project() {
                             )}
                         </Typography>
 
-                        <Button
-                            onClick={() => navigate(`/projects/${project.projectId}/tasks`)}
-                            variant="contained"
-                            sx={{ textTransform: "none",backgroundColor:"#FDCC0D",color:"black" }}
-                            
-                        >
-                          <PreviewIcon sx={{mr:1}}/>  Bütün Görevleri Görüntüle
-                        </Button>
+                        {
+                            userRole === "MANAGER" && (
+                                <Button
+                                    onClick={() => navigate(`/projects/${project.projectId}/tasks`)}
+                                    variant="contained"
+                                    sx={{ textTransform: "none", backgroundColor: "#FDCC0D", color: "black" }}
+
+                                >
+                                    <PreviewIcon sx={{ mr: 1 }} />  Bütün Görevleri Görüntüle
+                                </Button>
+                            )
+                        }
+
+
                     </Box>
 
                     <Stack
@@ -421,14 +427,7 @@ function Project() {
                                             </span>
                                         </Typography>
 
-                                        {/* Katılma Tarihi */}
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            sx={{ mt: 0.5 }}
-                                        >
-                                            Katıldı: {m.joinedAt.split("T")[0]}
-                                        </Typography>
+                                       
                                     </Box>
 
                                     {isCurrentUser && (
@@ -479,7 +478,7 @@ function Project() {
                                                             cursor: !isProjectActive ? "not-allowed" : "pointer",
                                                         }}
                                                         onClick={() =>
-                                                            navigate("/projects/" + projectId + "/create-task/" + m.memberId)
+                                                            navigate("/projects/" + projectId + "/" + m.memberId)
                                                         }
                                                     >
                                                         Görevleri Görüntüle
@@ -496,7 +495,7 @@ function Project() {
                                                     width: { xs: "100%", sm: "auto" },
                                                 }} onClick={() => openRoleDialog(m)}
                                             >
-                                                Yetki Değiştir
+                                                Rol Değiştir
                                             </Button>
 
                                             <Button

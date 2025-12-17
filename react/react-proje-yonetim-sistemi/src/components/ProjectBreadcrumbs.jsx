@@ -1,13 +1,23 @@
-import { Breadcrumbs, Link, Typography } from "@mui/material";
+import {
+  Breadcrumbs,
+  Link,
+  Typography,
+  IconButton,
+  Box,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 function ProjectBreadcrumbs() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { projectId, assignedMemberId } = useParams();
+  const { projectId, memberId } = useParams();
 
   const project = useSelector((state) => state.project.project);
+  const projectMember = useSelector(
+    (state) => state.projectMember.projectMember
+  );
 
   if (!location.pathname.startsWith("/projects")) {
     return null;
@@ -23,49 +33,73 @@ function ProjectBreadcrumbs() {
     "create-project": "Proje Oluştur",
     "project-settings": "Proje Ayarları",
     "create-task": "Görev Oluştur",
-    "tasks": "Görevler",
+    tasks: "Görevler",
   };
 
+  const breadcrumbs = [];
+
+  pathnames.forEach((value, index) => {
+    const to = "/" + pathnames.slice(0, index + 1).join("/");
+
+    if (value === projectId) {
+      breadcrumbs.push({
+        label: project?.name || "Proje Detayı",
+        to,
+      });
+      return;
+    }
+
+    if (value === memberId) {
+      breadcrumbs.push({
+        label: "Görevler",
+        to: `/projects/${projectId}/tasks`,
+      });
+
+      breadcrumbs.push({
+        label: projectMember?.userDto?.username || "Kullanıcı",
+        to,
+      });
+      return;
+    }
+
+    breadcrumbs.push({
+      label: nameMap[value] || value,
+      to,
+    });
+  });
+
   return (
-    <Breadcrumbs aria-label="breadcrumb" sx={{ ml: 3 }}>
-      {pathnames.map((value, index) => {
+    <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+      <IconButton
+        onClick={() => navigate(-1)}
+        sx={{ mr: 1 }}
+        size="small"
+      >
+        <ArrowBackIcon />
+      </IconButton>
 
-        // 🚫 assignedMemberId breadcrumb'ta gösterilmesin
-        if (value === assignedMemberId) {
-          return null;
-        }
+      <Breadcrumbs aria-label="breadcrumb">
+        {breadcrumbs.map((crumb, index) => {
+          const isLast = index === breadcrumbs.length - 1;
 
-        const to = "/" + pathnames.slice(0, index + 1).join("/");
-
-        let label = nameMap[value] || value;
-
-        // projectId yerine proje adı göster
-        if (value === projectId) {
-          label = project?.name || "Proje Detayı";
-        }
-
-        // assignedMemberId varsa create-task son breadcrumb olsun
-        const isLast =
-          index === pathnames.length - 1 ||
-          pathnames[index + 1] === assignedMemberId;
-
-        return isLast ? (
-          <Typography key={to} color="text.primary">
-            {label}
-          </Typography>
-        ) : (
-          <Link
-            key={to}
-            underline="hover"
-            color="inherit"
-            sx={{ cursor: "pointer" }}
-            onClick={() => navigate(to)}
-          >
-            {label}
-          </Link>
-        );
-      })}
-    </Breadcrumbs>
+          return isLast ? (
+            <Typography key={crumb.to} color="text.primary">
+              {crumb.label}
+            </Typography>
+          ) : (
+            <Link
+              key={crumb.to}
+              underline="hover"
+              color="inherit"
+              sx={{ cursor: "pointer" }}
+              onClick={() => navigate(crumb.to)}
+            >
+              {crumb.label}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    </Box>
   );
 }
 
