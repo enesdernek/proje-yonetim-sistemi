@@ -23,6 +23,7 @@ import com.enesdernek.proje_yonetim_sistemi.mapper.ProjectMemberMapper;
 import com.enesdernek.proje_yonetim_sistemi.repository.ConnectionRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.TaskRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.ProjectMemberService;
 
@@ -45,6 +46,9 @@ public class ProjectMemberManager implements ProjectMemberService {
 
 	@Autowired
 	private ConnectionRepository connectionRepository;
+	
+	@Autowired
+	private TaskRepository taskRepository;
 
 	@Override
 	public void addCreatorAsProjectManagerAfterProjectCreate(Project project, User creator) {
@@ -79,7 +83,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 		for (ProjectMemberRequest request : requests) {
 			User user = userRepository.findById(request.getUserId())
 					.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
-						
+
 			boolean isUsersConnected = this.connectionRepository.existsConnectionBetweenUsers(adderId,
 					request.getUserId());
 
@@ -111,7 +115,7 @@ public class ProjectMemberManager implements ProjectMemberService {
 	@Override
 	public ProjectMemberDto getByUserIdAndProjectId(Long userId, Long projectId) {
 		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
-				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));		
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 		return this.projectMemberMapper.toDto(member);
 	}
 
@@ -130,87 +134,84 @@ public class ProjectMemberManager implements ProjectMemberService {
 	@Override
 	@Transactional
 	public List<ProjectMemberDto> deleteMemberFromProject(Long userId, Long deletedUserId, Long projectId) {
-		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+
+		ProjectMember manager = projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
 				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
-		Project project = this.projectRepository.findById(projectId)
-				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
-		
-		if (member.getRole() != ProjectRole.MANAGER) {
+		if (manager.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Üye silmeye yetkiniz yok.");
 		}
 
-		ProjectMember deleteRequestedMember = this.projectMemberRepository
+		ProjectMember deletedMember = projectMemberRepository
 				.findByUser_UserIdAndProject_ProjectId(deletedUserId, projectId)
 				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
-		if (member.getUser().getUserId() == deleteRequestedMember.getUser().getUserId()) {
-            throw new BusinessException("Kendinizi bu şekilde silemezsiniz.");
+		if (manager.getUser().getUserId().equals(deletedMember.getUser().getUserId())) {
+			throw new BusinessException("Kendinizi silemezsiniz.");
 		}
 
-		ProjectMember deletedMember = this.projectMemberRepository
-				.deleteByUser_UserIdAndProject_ProjectId(deletedUserId, projectId)
-				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		// 🔥 ÖNCE TASKLARI SİL
+		taskRepository.deleteByAssignedMember(deletedMember);
+		taskRepository.deleteByCreator(deletedMember);
 
-		List<ProjectMember> members = this.projectMemberRepository.getAllByProject_ProjectId(projectId);
+		// 🔥 SONRA MEMBER’I SİL
+		projectMemberRepository.delete(deletedMember);
 
-		return this.projectMemberMapper.toDtoList(members);
+		return projectMemberMapper.toDtoList(projectMemberRepository.getAllByProject_ProjectId(projectId));
 	}
 
 	@Override
 	public ProjectMemberDto changeMembersRole(Long userId, Long roleChangedUserId, Long projectId, ProjectRole role) {
-	    Project project = this.projectRepository.findById(projectId)
-	            .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-	    ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
-	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
-	    ProjectMember roleChangedUser = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(roleChangedUserId, projectId)
-	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		ProjectMember roleChangedUser = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(roleChangedUserId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
-	    if(member.getRole() != ProjectRole.MANAGER) {
-	        throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
-	    }
+		if (member.getRole() != ProjectRole.MANAGER) {
+			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
+		}
 
-	    if(roleChangedUser.getRole() == role) {
-	        throw new BusinessException("Kullanıcı zaten bu rolde.");
-	    }
+		if (roleChangedUser.getRole() == role) {
+			throw new BusinessException("Kullanıcı zaten bu rolde.");
+		}
 
-	    if(roleChangedUser.getRole() == ProjectRole.MANAGER) {
-	        long managerCount = this.projectMemberRepository.countByProject_ProjectIdAndRole(projectId, ProjectRole.MANAGER);
-	        if(roleChangedUser.getUser().getUserId().equals(userId) && managerCount <= 1) {
-	            throw new BusinessException("Projede en az bir manager olmalı, rolünüzü değiştiremezsiniz.");
-	        }
-	    }
+		if (roleChangedUser.getRole() == ProjectRole.MANAGER) {
+			long managerCount = this.projectMemberRepository.countByProject_ProjectIdAndRole(projectId,
+					ProjectRole.MANAGER);
+			if (roleChangedUser.getUser().getUserId().equals(userId) && managerCount <= 1) {
+				throw new BusinessException("Projede en az bir manager olmalı, rolünüzü değiştiremezsiniz.");
+			}
+		}
 
-	    roleChangedUser.setRole(role);
-	    this.projectMemberRepository.save(roleChangedUser);
+		roleChangedUser.setRole(role);
+		this.projectMemberRepository.save(roleChangedUser);
 
-	    return this.projectMemberMapper.toDto(roleChangedUser);
+		return this.projectMemberMapper.toDto(roleChangedUser);
 	}
 
 	@Transactional
 	@Override
 	public void leaveProject(Long userId, Long projectId) {
-	    Project project = this.projectRepository.findById(projectId)
-	            .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
+		Project project = this.projectRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-	    ProjectMember member = this.projectMemberRepository
-	            .findByUser_UserIdAndProject_ProjectId(userId, projectId)
-	            .orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
-	    ProjectRole leavingRole = member.getRole();
+		ProjectRole leavingRole = member.getRole();
 
-	    long managerCount = project.getMembers()
-	            .stream()
-	            .filter(m -> m.getRole() == ProjectRole.MANAGER)
-	            .count();
+		long managerCount = project.getMembers().stream().filter(m -> m.getRole() == ProjectRole.MANAGER).count();
 
-	    if (leavingRole == ProjectRole.MANAGER && managerCount <= 1) {
-	        throw new UnauthorizedActionException("Projede en az 1 adet yönetici (manager) bulunmalıdır.");
-	    }
+		if (leavingRole == ProjectRole.MANAGER && managerCount <= 1) {
+			throw new UnauthorizedActionException("Projede en az 1 adet yönetici (manager) bulunmalıdır.");
+		}
 
-	    this.projectMemberRepository.deleteMember(userId, projectId);
+		this.projectMemberRepository.deleteMember(userId, projectId);
 	}
 
 }

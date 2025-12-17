@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
 import com.enesdernek.proje_yonetim_sistemi.entity.Task;
 import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
@@ -48,6 +49,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             TaskStatus status,
             Pageable pageable
         );
+
+    void deleteByAssignedMember(ProjectMember member);
+    void deleteByCreator(ProjectMember member);
+    void deleteAllByProject_ProjectId(Long projectId);
 
     
 

@@ -21,8 +21,11 @@ function ProjectSettings() {
     const token = useSelector((state) => state.user.token);
 
     const [openConfirm, setOpenConfirm] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
 
     const handleDelete = async () => {
+        setDeleteError(""); // eski hatayı temizle
+
         const resultAction = await dispatch(
             deleteProjectByProjectId({
                 projectId,
@@ -31,13 +34,14 @@ function ProjectSettings() {
         );
 
         if (deleteProjectByProjectId.rejected.match(resultAction)) {
-            alert(
-                resultAction.payload ||
-                "Proje silinirken hata oluştu."
+            setDeleteError(
+                resultAction.payload || "Proje silinirken hata oluştu."
             );
             return;
         }
 
+        // başarılıysa
+        setOpenConfirm(false);
         navigate("/projects");
     };
 
@@ -55,8 +59,11 @@ function ProjectSettings() {
             <Button
                 variant="contained"
                 color="error"
-                onClick={() => setOpenConfirm(true)}
-                sx={{textTransform:"none"}}
+                onClick={() => {
+                    setDeleteError("");
+                    setOpenConfirm(true);
+                }}
+                sx={{ textTransform: "none" }}
             >
                 Projeyi Sil
             </Button>
@@ -84,6 +91,17 @@ function ProjectSettings() {
                     >
                         Bu işlem geri alınamaz.
                     </Typography>
+
+                    {/* ❌ HATA MESAJI */}
+                    {deleteError && (
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            sx={{ mt: 2, fontWeight: 600 }}
+                        >
+                            {deleteError}
+                        </Typography>
+                    )}
                 </DialogContent>
 
                 <DialogActions>

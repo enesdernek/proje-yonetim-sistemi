@@ -3,11 +3,13 @@ package com.enesdernek.proje_yonetim_sistemi.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +32,7 @@ public class TaskController {
 	private TaskService taskService;
 	
 	@DeleteMapping("/delete-task")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessResult> deleteTask(Authentication auth, Long taskId) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -42,6 +45,7 @@ public class TaskController {
 	}
 	
 	@PutMapping("/change-task-status")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatus(Authentication auth,Long taskId,TaskStatus taskStatus) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -53,6 +57,7 @@ public class TaskController {
 	}
 	
 	@PutMapping("/change-task-status-to-in-progress")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToInProgress(Authentication auth, Long taskId) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -64,6 +69,7 @@ public class TaskController {
 	}
 	
 	@PutMapping("/update-task")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> updateTask(Authentication auth, Long taskId,@Valid TaskDtoIU taskDtoIU) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -75,6 +81,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("get-all-tasks-by-status")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllTasksByStatus(Authentication auth, Long projectId, TaskStatus status,int pageNo, int pageSize) {
 		
 		User user = (User) auth.getPrincipal();
@@ -87,6 +94,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("get-users-all-tasks")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getUsersAllTasks(Authentication auth, int pageNo, int pageSize) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -98,7 +106,8 @@ public class TaskController {
 	}
 
 	@PostMapping("/create-task")
-	public ResponseEntity<SuccessDataResult<TaskDto>> createTask(Authentication auth, @Valid TaskDtoIU taskDtoIU) {
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<TaskDto>> createTask(Authentication auth, @Valid @RequestBody TaskDtoIU taskDtoIU) {
 
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -111,6 +120,7 @@ public class TaskController {
 	}
 
 	@GetMapping("/get-by-id")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> getTaskById(Authentication auth, Long taskId) {
 		User user = (User) auth.getPrincipal();
 		Long authUserId = user.getUserId();
@@ -123,6 +133,7 @@ public class TaskController {
 	}
 
 	@GetMapping("/get-all-tasks-by-project-id")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getTasksByProjectId(Authentication auth,
 			Long projectId, int pageNo, int pageSize) {
 		User user = (User) auth.getPrincipal();
@@ -136,6 +147,7 @@ public class TaskController {
 	}
 
 	@GetMapping("/get-all-project-tasks-assigned-to-member")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getProjectTasksAssignedToProjectMember(
 			Authentication auth, Long projectId, int pageNo, int pageSize) {
 		User user = (User) auth.getPrincipal();

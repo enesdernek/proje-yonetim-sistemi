@@ -11,6 +11,8 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from "@mui/material";
 import { changeMembersRole, deleteMemberFromProject, leaveProject } from "../redux/slices/projectMemberSlice";
 import EditIcon from '@mui/icons-material/Edit';
+import { Tooltip } from "@mui/material";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BASE_URL = API_URL.replace("/api", "");
@@ -49,6 +51,7 @@ function Project() {
     const [leaveDialogOpen, setLeaveDialogOpen] = React.useState(false);
     const [leaveError, setLeaveError] = React.useState("");
 
+    const isProjectActive = project?.status === "IN_PROGRESS";
     const userRole = projectRoles?.[projectId];
 
     const STATUS_LABELS = {
@@ -312,15 +315,21 @@ function Project() {
 
                     </Typography>
 
-                    <Stack spacing={1}>
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        sx={{
+                            ml: { sm: "auto" },     // sadece desktop’ta sağa yasla
+                            width: { xs: "100%", sm: "auto" },
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {members?.map((m) => {
                             const isCurrentUser = m.userDto.userId === userId;
 
                             return (
                                 <Card
-                                    onClick={() =>
-                                        !isCurrentUser && navigate("/users-profile/" + m.userDto.userId)
-                                    }
+
                                     key={m.memberId}
                                     sx={{
                                         p: 2,
@@ -329,18 +338,16 @@ function Project() {
                                         alignItems: "center",
                                         gap: 2,
                                         boxShadow: 1,
-                                        cursor: isCurrentUser ? "default" : "pointer",
                                         transition: "0.2s ease",
                                         backgroundColor: isCurrentUser ? "rgba(0, 150, 255, 0.08)" : "inherit",
-                                        "&:hover": !isCurrentUser && {
-                                            boxShadow: 4,
-                                            transform: "scale(1.01)",
-                                            backgroundColor: "rgba(0,0,0,0.03)",
-                                        },
+
                                     }}
                                 >
                                     {/* Profil resmi */}
                                     <CardMedia
+                                        onClick={() =>
+                                            !isCurrentUser && navigate("/users-profile/" + m.userDto.userId)
+                                        }
                                         component="img"
                                         image={
                                             m.userDto.profileImageUrl
@@ -353,11 +360,25 @@ function Project() {
                                             height: 60,
                                             borderRadius: "50%",
                                             objectFit: "cover",
+                                            "&:hover": {
+                                                cursor: "pointer",
+                                            },
                                         }}
                                     />
 
                                     <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle1" fontWeight={600}>
+                                        <Typography
+                                            onClick={() =>
+                                                !isCurrentUser && navigate("/users-profile/" + m.userDto.userId)
+                                            }
+                                            variant="subtitle1" fontWeight={600}
+                                            sx={{
+                                                "&:hover": {
+                                                    cursor: "pointer",
+                                                    textDecoration: "underline",
+                                                },
+                                            }}
+                                        >
                                             {m.userDto.username}{" "}
                                             {isCurrentUser && (
                                                 <Chip
@@ -415,17 +436,50 @@ function Project() {
 
                                     {!isCurrentUser && userRole === "MANAGER" && (
                                         <Stack
-                                            direction="row"
+                                            direction={{ xs: "column", sm: "row" }}
                                             spacing={1}
-                                            sx={{ ml: "auto" }}
+                                            sx={{
+                                                ml: { sm: "auto" },
+                                                width: { xs: "100%", sm: "auto" },
+                                            }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
+                                            <Tooltip
+                                                title={
+                                                    !isProjectActive
+                                                        ? "Görev verebilmeniz için projeyi aktif hale getirmelisiniz"
+                                                        : ""
+                                                }
+                                                arrow
+                                            >
+                                                <span style={{ width: "auto" }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="secondary"
+                                                        size="small"
+                                                        disabled={!isProjectActive}
+                                                        sx={{
+                                                            textTransform: "none",
+                                                            width: { xs: "100%", sm: "auto" },
+                                                            cursor: !isProjectActive ? "not-allowed" : "pointer",
+                                                        }}
+                                                        onClick={() =>
+                                                            navigate("/projects/" + projectId + "/create-task/" + m.memberId)
+                                                        }
+                                                    >
+                                                        Görev Ver
+                                                    </Button>
+                                                </span>
+                                            </Tooltip>
+
                                             <Button
                                                 variant="contained"
                                                 color="info"
                                                 size="small"
-                                                sx={{ textTransform: "none" }}
-                                                onClick={() => openRoleDialog(m)}
+                                                sx={{
+                                                    textTransform: "none",
+                                                    width: { xs: "100%", sm: "auto" },
+                                                }} onClick={() => openRoleDialog(m)}
                                             >
                                                 Yetki Değiştir
                                             </Button>
@@ -434,8 +488,10 @@ function Project() {
                                                 variant="contained"
                                                 color="error"
                                                 size="small"
-                                                sx={{ textTransform: "none" }}
-                                                onClick={() => openDeleteDialog(m)}
+                                                sx={{
+                                                    textTransform: "none",
+                                                    width: { xs: "100%", sm: "auto" },
+                                                }} onClick={() => openDeleteDialog(m)}
                                             >
                                                 Üyeyi Sil
                                             </Button>
@@ -451,7 +507,7 @@ function Project() {
 
                         <DialogContent sx={{ minWidth: 300 }}>
                             <Typography>
-                                Bu projeden ayrılmak istediğinize emin misiniz?
+                                Bu projeden ayrılmak istediğinize emin misiniz? Projeye ait tüm görevleriniz ve verileriniz silinecektir.
                             </Typography>
 
                             {leaveError && (
@@ -482,7 +538,7 @@ function Project() {
                         <DialogContent sx={{ minWidth: 300 }}>
                             <Typography>
                                 <strong>{deleteUser?.userDto.username}</strong> adlı üyeyi projeden
-                                silmek istediğinize emin misiniz?
+                                silmek istediğinize emin misiniz? Üyenin tüm görevleri ve verileri silinecektir.
                             </Typography>
 
                             {deleteError && (

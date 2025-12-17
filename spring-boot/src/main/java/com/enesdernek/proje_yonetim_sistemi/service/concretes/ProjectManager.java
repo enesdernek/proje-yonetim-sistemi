@@ -325,23 +325,26 @@ public class ProjectManager implements ProjectService {
 		return this.projectMapper.toDto(project);
 	}
 
+	@Transactional
 	@Override
 	public void deleteProjectByProjectId(Long userId, Long projectId) {
-		Project project = this.projectRepository.findById(projectId)
-				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-		ProjectMember projectMember = this.projectMemberRepository
-				.findByUser_UserIdAndProject_ProjectId(userId, projectId)
-				.orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
+	    Project project = projectRepository.findById(projectId)
+	            .orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
 
-		if (projectMember.getRole() != ProjectRole.MANAGER) {
-			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
-		}
-		
-		deleteImage(userId, projectId);
+	    ProjectMember projectMember = projectMemberRepository
+	            .findByUser_UserIdAndProject_ProjectId(userId, projectId)
+	            .orElseThrow(() -> new NotFoundException("Proje üyesi bulunamadı."));
 
-		this.projectRepository.deleteById(projectId);
+	    if (projectMember.getRole() != ProjectRole.MANAGER) {
+	        throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
+	    }
 
+	    deleteImage(userId, projectId);
+
+	    taskRepository.deleteAllByProject_ProjectId(projectId);
+
+	    projectRepository.delete(project);
 	}
 
 	@Override

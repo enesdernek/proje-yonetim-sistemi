@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 function ProjectBreadcrumbs() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { projectId } = useParams();
+  const { projectId, assignedMemberId } = useParams();
 
   const project = useSelector((state) => state.project.project);
 
@@ -22,20 +22,31 @@ function ProjectBreadcrumbs() {
     "manage-project": "Proje Durumunu Yönet",
     "create-project": "Proje Oluştur",
     "project-settings": "Proje Ayarları",
+    "create-task": "Görev Oluştur",
   };
 
   return (
-    <Breadcrumbs aria-label="breadcrumb" sx={{  ml: 3 }}>
+    <Breadcrumbs aria-label="breadcrumb" sx={{ ml: 3 }}>
       {pathnames.map((value, index) => {
+
+        // 🚫 assignedMemberId breadcrumb'ta gösterilmesin
+        if (value === assignedMemberId) {
+          return null;
+        }
+
         const to = "/" + pathnames.slice(0, index + 1).join("/");
 
         let label = nameMap[value] || value;
 
+        // projectId yerine proje adı göster
         if (value === projectId) {
           label = project?.name || "Proje Detayı";
         }
 
-        const isLast = index === pathnames.length - 1;
+        // assignedMemberId varsa create-task son breadcrumb olsun
+        const isLast =
+          index === pathnames.length - 1 ||
+          pathnames[index + 1] === assignedMemberId;
 
         return isLast ? (
           <Typography key={to} color="text.primary">
