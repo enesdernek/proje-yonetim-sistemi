@@ -101,7 +101,7 @@ function ProjectList() {
                 }}
             >
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    Projeler
+                    Projelerim
                 </Typography>
 
                 <Button

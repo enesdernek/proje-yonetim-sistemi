@@ -23,11 +23,14 @@ function SearchUserPage() {
 
     const userList = useSelector((state) => state.user?.userList || []);
     const token = useSelector((state) => state.user.token);
+    const user = useSelector((state) => state.user.user)
     const isConnectedMap = useSelector((state) => state.connection.isConnectedMap) || {};
     const connectionLoading = useSelector((state) => state.connection.loading);
     const requestLoading = useSelector((state) => state.connectionRequest.loading);
     const sendedRequests = useSelector((state) => state.connectionRequest.sendedConnectionRequests);
     const authUserId = useSelector((state) => state.user.user?.userId);
+
+
 
     const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
@@ -36,6 +39,7 @@ function SearchUserPage() {
         dispatch(searchUser({ searchInput, token }));
     };
 
+    // Her kullanıcı için bağlantı durumunu getir
     useEffect(() => {
         if (userList.length > 0) {
             userList.forEach((u) => {
@@ -44,6 +48,7 @@ function SearchUserPage() {
         }
     }, [userList, token, dispatch]);
 
+    // Navigasyon değişince listeyi temizle
     useEffect(() => {
         dispatch(clearUserList());
     }, [navigate, dispatch]);
@@ -86,9 +91,9 @@ function SearchUserPage() {
                     {userList
                         .filter((user) => user.userId !== authUserId)
                         .map((user) => {
-                            const isConn = isConnectedMap[user.userId];
-                            const pendingRequest = sendedRequests.find(req => req.receiverId === user.userId);
-                            const showPending = pendingRequest && !isConn; // pending yalnızca bağlantı yoksa
+                            const isConn = isConnectedMap[user.userId]; // burada tanımla
+                            const updatedPendingRequest = sendedRequests.find(req => req.receiverId === user.userId);
+                            const showPending = updatedPendingRequest && !isConn;
 
                             return (
                                 <Card key={user.userId} sx={{ p: 2 }}>
@@ -102,10 +107,7 @@ function SearchUserPage() {
                                             {user.username?.slice(0, 2)?.toUpperCase()}
                                         </Avatar>
 
-                                        <Box
-                                            sx={{ flexGrow: 1, cursor: 'pointer' }}
-                                            onClick={() => navigate(`/users-profile/${user.userId}`)}
-                                        >
+                                        <Box sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => navigate(`/users-profile/${user.userId}`)}>
                                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                                 {user.username}
                                             </Typography>
@@ -123,7 +125,16 @@ function SearchUserPage() {
                                             <Button
                                                 variant="contained"
                                                 color="error"
-                                                onClick={() => dispatch(deleteConnection({ otherUserId: user.userId, token }))}
+                                                onClick={async () => {
+                                                    await dispatch(deleteConnection({ otherUserId: user.userId, token })).unwrap();
+
+                                                    dispatch(isConnected({ otherUserId: user.userId, token }));
+
+                                                    const pendingReq = sendedRequests.find(req => req.receiverId === user.userId);
+                                                    if (pendingReq) {
+                                                        dispatch(deleteConnectionRequest({ token, requestId: pendingReq.requestId }));
+                                                    }
+                                                }}
                                             >
                                                 Bağlantıyı Kaldır
                                             </Button>
@@ -143,9 +154,10 @@ function SearchUserPage() {
                                                 <Button
                                                     variant="contained"
                                                     color="error"
-                                                    onClick={() =>
-                                                        dispatch(deleteConnectionRequest({ token, requestId: pendingRequest.requestId }))
-                                                    }
+                                                    onClick={async () => {
+                                                        await dispatch(deleteConnectionRequest({ token, requestId: updatedPendingRequest.requestId })).unwrap();
+                                                        dispatch(isConnected({ otherUserId: user.userId, token }));
+                                                    }}
                                                 >
                                                     İsteği İptal Et
                                                 </Button>
@@ -154,9 +166,10 @@ function SearchUserPage() {
                                             <Button
                                                 variant="contained"
                                                 color="primary"
-                                                onClick={() =>
-                                                    dispatch(createConnectionRequest({ token, connectionRequestDtoIU: { receiverId: user.userId } }))
-                                                }
+                                                onClick={async () => {
+                                                    await dispatch(createConnectionRequest({ token, connectionRequestDtoIU: { receiverId: user.userId } })).unwrap();
+                                                    dispatch(isConnected({ otherUserId: user.userId, token }));
+                                                }}
                                             >
                                                 Bağlantı Kur
                                             </Button>
@@ -165,6 +178,7 @@ function SearchUserPage() {
                                 </Card>
                             );
                         })}
+
                 </Stack>
             )}
         </Box>

@@ -101,7 +101,7 @@ function TaskList() {
       <AppBar position="static" color="primary" sx={{ mb: 2 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="h6">
-            Görevleriniz {statusFilter && `(${statusMap[statusFilter]})`}
+            Görevlerim {statusFilter && `(${statusMap[statusFilter]})`}
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
