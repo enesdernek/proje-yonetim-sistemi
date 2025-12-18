@@ -22,8 +22,15 @@ import {
     startProject,
     restartProject,
     getProjectById,
-    updateProjectProgress
+    updateProjectProgress,
+    completeProject
 } from "../redux/slices/projectSlice";
+import { getTasksByProjectId } from "../redux/slices/taskSlice";
+
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 
 function ProjectManagement() {
     const { projectId } = useParams();
@@ -38,6 +45,10 @@ function ProjectManagement() {
 
     const [progress, setProgress] = useState(0);
     const [progressLoading, setProgressLoading] = useState(false);
+
+    const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+    const [hasUndoneTasks, setHasUndoneTasks] = useState(false);
+    const [checkingTasks, setCheckingTasks] = useState(false);
 
     const STATUS_LABELS = {
         PLANNING: "Planlanıyor",
@@ -58,6 +69,56 @@ function ProjectManagement() {
             setProgress(project.progress);
         }
     }, [project]);
+
+    const handleOpenCompleteDialog = async () => {
+        setCheckingTasks(true);
+        setCompleteDialogOpen(true);
+
+        const resultAction = await dispatch(
+            getTasksByProjectId({
+                projectId,
+                pageNo: 1,
+                pageSize: 1000, 
+                token
+            })
+        );
+
+        setCheckingTasks(false);
+
+        if (getTasksByProjectId.rejected.match(resultAction)) {
+            showSnackbar(
+                resultAction.payload || "Görevler kontrol edilirken hata oluştu.",
+                "error"
+            );
+            setCompleteDialogOpen(false);
+            return;
+        }
+
+        const tasks = resultAction.payload.taskDtos || [];
+
+        const hasUndone = tasks.some(
+            (task) => task.status !== "DONE"
+        );
+
+        setHasUndoneTasks(hasUndone);
+    };
+
+    const handleConfirmCompleteProject = async () => {
+        const resultAction = await dispatch(
+            completeProject({ projectId, token })
+        );
+
+        if (completeProject.rejected.match(resultAction)) {
+            showSnackbar(
+                resultAction.payload || "Proje tamamlanamadı.",
+                "error"
+            );
+            return;
+        }
+
+        showSnackbar("Proje başarıyla tamamlandı.");
+        setCompleteDialogOpen(false);
+    };
 
     const showSnackbar = (message, severity = "success") => {
         setSnackbarMessage(message);
@@ -166,6 +227,14 @@ function ProjectManagement() {
                                 >
                                     Projeyi İptal Et
                                 </Button>
+
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    onClick={handleOpenCompleteDialog}
+                                >
+                                    Projeyi Tamamla
+                                </Button>
                             </>
                         )}
 
@@ -189,7 +258,7 @@ function ProjectManagement() {
                             </>
                         )}
 
-                        {project.status === "CANCELLED" && (
+                        {project.status === "CANCELLED" || project.status === "COMPLETED" && (
                             <Button
                                 variant="contained"
                                 color="success"
@@ -253,7 +322,59 @@ function ProjectManagement() {
                         </>
                     )}
                 </CardContent>
+
+
             </Card>
+
+            <Dialog
+                open={completeDialogOpen}
+                onClose={() => setCompleteDialogOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>Projeyi Tamamla</DialogTitle>
+
+                <DialogContent>
+                    {checkingTasks ? (
+                        <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : hasUndoneTasks ? (
+                        <Alert severity="warning">
+                            Projede henüz <strong>tamamlanmamış görevler</strong> var.
+                            <br /><br />
+                            Projeyi tamamlarsanız bu görevler otomatik olarak
+                            <strong> DONE (Tamamlandı)</strong> durumuna getirilecektir.
+                            <br /><br />
+                            Devam etmek istiyor musunuz?
+                        </Alert>
+                    ) : (
+                        <Alert severity="info">
+                            Projedeki tüm görevler zaten tamamlanmış.
+                            <br /><br />
+                            Projeyi tamamlamak istiyor musunuz?
+                        </Alert>
+                    )}
+                </DialogContent>
+
+                <DialogActions>
+                    <Button
+                        onClick={() => setCompleteDialogOpen(false)}
+                        color="inherit"
+                    >
+                        Vazgeç
+                    </Button>
+
+                    <Button
+                        onClick={handleConfirmCompleteProject}
+                        variant="contained"
+                        color="success"
+                        disabled={checkingTasks}
+                    >
+                        Onayla
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={snackbarOpen}

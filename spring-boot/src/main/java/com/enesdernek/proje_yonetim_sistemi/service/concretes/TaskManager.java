@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.SystemPropertyUtils;
 
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
@@ -60,7 +61,8 @@ public class TaskManager implements TaskService {
 			throw new UnauthorizedActionException("Görev oluşturma yetkiniz yok.");
 		}
 
-		ProjectMember assignedMember = this.projectMemberRepository.findById(taskDtoIU.getAssignedMemberId()).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+		ProjectMember assignedMember = this.projectMemberRepository.findById(taskDtoIU.getAssignedMemberId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 		Task task = this.taskMapper.toEntity(taskDtoIU);
 
 		task.setCreator(manager);
@@ -109,19 +111,16 @@ public class TaskManager implements TaskService {
 	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo,
 			int pageSize) {
 
-		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı"));
 
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-		Page<Task> tasks =
-			    this.taskRepository.getTasksByProjectIdAndAssignedMemberId(
-			        projectId,
-			        member.getMemberId(),
-			        pageable
-			    );
+		Page<Task> tasks = this.taskRepository.getTasksByProjectIdAndAssignedMemberId(projectId, member.getMemberId(),
+				pageable);
 
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
@@ -131,29 +130,29 @@ public class TaskManager implements TaskService {
 		response.setTotalPages(tasks.getTotalPages());
 		return response;
 	}
-	
+
 	@Override
-	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId, Long assignedMemberId, Long projectId,
-			int pageNo, int pageSize) {
-		ProjectMember manager = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
-		
-		ProjectMember assignedMember = this.projectMemberRepository.findByMemberIdAndProject_ProjectId(assignedMemberId, projectId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
+	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId, Long assignedMemberId,
+			Long projectId, int pageNo, int pageSize) {
+		ProjectMember manager = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		ProjectMember assignedMember = this.projectMemberRepository
+				.findByMemberIdAndProject_ProjectId(assignedMemberId, projectId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
 
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı"));
-		
-		if(manager.getRole() != ProjectRole.MANAGER) {
+
+		if (manager.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Yetkiniz yok");
 		}
 
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-		Page<Task> tasks =
-			    this.taskRepository.getTasksByProjectIdAndAssignedMemberId(
-			        projectId,
-			        assignedMember.getMemberId(),
-			        pageable
-			    );
+		Page<Task> tasks = this.taskRepository.getTasksByProjectIdAndAssignedMemberId(projectId,
+				assignedMember.getMemberId(), pageable);
 
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
@@ -164,137 +163,177 @@ public class TaskManager implements TaskService {
 		return response;
 	}
 
-
 	public TaskDtoPagedResponse getUsersAllTasks(Long userId, int pageNo, int pageSize) {
-		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
-		
-		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
-		
-		Page<Task> tasks =
-			    this.taskRepository.findByAssignedMember_User_UserId(
-			        userId,
-			        pageable
-			    );		
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+		Page<Task> tasks = this.taskRepository.findByAssignedMember_User_UserIdOrderByTaskIdDesc(userId, pageable);
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
-		
+
 		response.setTaskDtos(taskDtos);
 		response.setTotalElements(tasks.getTotalElements());
 		response.setTotalPages(tasks.getTotalPages());
-		
+
 		return response;
 
 	}
 
 	@Override
-	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize) {
-		
-		ProjectMember member = this.projectMemberRepository.findById(authUserId).orElseThrow(()->new NotFoundException("Üye bulunamadı"));
-		
-		if(member.getRole() != ProjectRole.MANAGER) {
+	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,
+			int pageNo, int pageSize) {
+
+		ProjectMember member = this.projectMemberRepository.findById(authUserId)
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		if (member.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bunu yapmaya yetkiniz yok.");
 		}
-		
-		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
-		
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
 		Page<Task> tasks = this.taskRepository.findByProject_ProjectIdAndStatus(projectId, status, pageable);
-		
+
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
-	
+
 		response.setTaskDtos(taskDtos);
 		response.setTotalElements(tasks.getTotalElements());
 		response.setTotalPages(tasks.getTotalPages());
-		
+
+		return response;
+	}
+	
+	@Override
+	public TaskDtoPagedResponse getAllUsersTasksByStatus(Long userId, TaskStatus status, int pageNo, int pageSize) {
+		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı"));
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+		Page<Task> tasks = this.taskRepository.findByAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(userId, status, pageable);
+
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+
 		return response;
 	}
 
 	@Override
 	public TaskDto updateTask(Long authUserId, Long taskId, TaskDtoIU taskDtoIU) {
-		
-		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, taskDtoIU.getProjectId()).orElseThrow(()-> new NotFoundException("Üye bulunamadı"));
-		
-		if(member.getRole() != ProjectRole.MANAGER) {
+
+		ProjectMember member = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, taskDtoIU.getProjectId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı"));
+
+		if (member.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Yetkiniz yok.");
 		}
-		
-		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
-		
+
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
+
 		task.setDescription(taskDtoIU.getDescription());
 		task.setStartDate(taskDtoIU.getStartDate());
 		task.setDueDate(taskDtoIU.getDueDate());
 		task.setTitle(taskDtoIU.getTitle());
 		task.setUpdatedAt(LocalDateTime.now());
 		task.setStatus(TaskStatus.TODO);
-		
+
 		Task newTask = this.taskRepository.save(task);
-		
+
 		return this.taskMapper.toDto(newTask);
 	}
 
 	@Override
 	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId) {
-		
-		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+				
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
 
-		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
-		
-		if(task.getAssignedMember().getMemberId()!= authUserId) {
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı."));
+
+		if (task.getAssignedMember().getUser().getUserId() != authUserId) {
 			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
 		}
-		
+
 		task.setStatus(TaskStatus.IN_PROGRESS);
-		
+
 		Task savedTask = this.taskRepository.save(task);
-		
+
 		return this.taskMapper.toDto(savedTask);
 	}
-	
-	@Override
-	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus) {
-		
-		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
 
-		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
-		
-		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+	@Override
+	public TaskDto changeTaskStatus(Long authUserId, Long taskId, TaskStatus taskStatus) {
+
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
+
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
 		}
-		
+
 		task.setStatus(taskStatus);
-		
+
 		Task savedTask = this.taskRepository.save(task);
-		
+
 		return this.taskMapper.toDto(savedTask);
 	}
 
 	@Override
 	public void deleteTask(Long authUserId, Long taskId) {
-		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
 
-		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
-		
-		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
 		}
-		
+
 		this.taskRepository.delete(task);
 	}
 
 	@Override
 	public TaskDto changeTaskStatusToDone(Long authUserId, Long taskId) {
-		Task task = this.taskRepository.findById(taskId).orElseThrow(()->new NotFoundException("Görev bulunamadı."));
-		ProjectMember projectMember = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId()).orElseThrow(()->new NotFoundException("Üye bulunamadı."));
-		
-		if(projectMember.getRole()!= ProjectRole.MANAGER ){
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
+		ProjectMember projectMember = this.projectMemberRepository
+				.findByUser_UserIdAndProject_ProjectId(authUserId, task.getProject().getProjectId())
+				.orElseThrow(() -> new NotFoundException("Üye bulunamadı."));
+
+		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi yapmaya yetkiniz yok.");
 		}
-		
+
 		task.setStatus(TaskStatus.DONE);
 		this.taskRepository.save(task);
 
 		return this.taskMapper.toDto(task);
 	}
 
+	@Override
+	public TaskDto changeTaskStatusToReview(Long authUserId, Long taskId) {
+		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
+		User user = this.userRepository.findById(authUserId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
+		
+		if(task.getAssignedMember().getUser().getUserId() != authUserId) {
+			throw new UnauthorizedActionException("Bunu yapmaya yetkiniz yok.");
+		}
+		task.setStatus(TaskStatus.REVIEW);
+		this.taskRepository.save(task);
+		return this.taskMapper.toDto(task);
+	}
+
 	
+
 }

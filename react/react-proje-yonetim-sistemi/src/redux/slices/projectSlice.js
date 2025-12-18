@@ -367,6 +367,34 @@ export const deleteProjectByProjectId = createAsyncThunk(
     }
 );
 
+export const completeProject = createAsyncThunk(
+    "project/completeProject",
+    async ({ projectId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_PROJECT}/complete-project?projectId=${projectId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Proje tamamlanırken hata oluştu."
+            );
+        }
+    }
+);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const projectSlice = createSlice({
@@ -632,6 +660,29 @@ export const projectSlice = createSlice({
             .addCase(deleteProjectByProjectId.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Proje silinemedi.";
+            })
+            .addCase(completeProject.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(completeProject.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedProject = action.payload;
+
+                state.project = updatedProject;
+
+                const index = state.projects.findIndex(
+                    (p) => p.projectId === updatedProject.projectId
+                );
+
+                if (index !== -1) {
+                    state.projects[index] = updatedProject;
+                }
+            })
+            .addCase(completeProject.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Proje tamamlanamadı.";
             })
     }
 })

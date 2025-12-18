@@ -19,6 +19,8 @@ import com.enesdernek.proje_yonetim_sistemi.entity.Project;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectMember;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectRole;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectStatus;
+import com.enesdernek.proje_yonetim_sistemi.entity.Task;
+import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.BusinessException;
 import com.enesdernek.proje_yonetim_sistemi.exception.exceptions.NotFoundException;
@@ -114,6 +116,7 @@ public class ProjectManager implements ProjectService {
 	}
 
 	@Override
+	@Transactional
 	public ProjectDto completeProject(Long userId, Long projectId) {
 		Project project = this.projectRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Proje bulunamadı."));
@@ -138,6 +141,14 @@ public class ProjectManager implements ProjectService {
 
 		if (current == ProjectStatus.PLANNING) {
 			throw new BusinessException("Projeyi bitirmek için öncelikle başlatmalısınız.");
+		}
+		
+		List<Task>tasks = this.taskRepository.getTasksByProject_ProjectIdOrderByTaskIdDesc(projectId);
+		
+		for (Task task : tasks) {
+		    if (task.getStatus() != TaskStatus.DONE) {
+		        task.setStatus(TaskStatus.DONE);
+		    }
 		}
 
 		project.setStatus(ProjectStatus.COMPLETED);
@@ -256,7 +267,6 @@ public class ProjectManager implements ProjectService {
 		String projectImageUrl = uploadProjectImage(null, file);
 
 		Project project = projectMapper.toEntity(projectDtoIU);
-		System.out.println(project);
 		project.setProjectImageUrl(projectImageUrl);
 		project.setCreator(creator);
 
@@ -364,8 +374,6 @@ public class ProjectManager implements ProjectService {
 		if (projectMember.getRole() != ProjectRole.MANAGER) {
 			throw new UnauthorizedActionException("Bu işlemi gerçekleştirmeye yetkiniz yok.");
 		}
-
-		System.out.println("[INFO] ProjectId=" + projectId + " progress güncelleniyor → " + process);
 
 		project.setProgress(process);
 		this.projectRepository.save(project);

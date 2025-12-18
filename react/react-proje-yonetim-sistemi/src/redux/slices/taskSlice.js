@@ -192,7 +192,7 @@ export const getProjectTasksAssignedToMember = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            return response.data.data; 
+            return response.data.data;
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Görevler getirilirken bir hata oluştu."
@@ -204,7 +204,7 @@ export const getProjectTasksAssignedToMember = createAsyncThunk(
 export const getAllProjectMembersTasksByProject = createAsyncThunk(
     "task/getAllProjectMembersTasksByProject",
     async ({ projectId, assignedMemberId, pageNo = 1, pageSize = 10, token }, { rejectWithValue }) => {
-        console.log(projectId,assignedMemberId,pageNo,pageSize,token)
+        console.log(projectId, assignedMemberId, pageNo, pageSize, token)
         try {
             const response = await axios.get(`${API_URL_TASK}/get-all-project-members-tasks-by-project`, {
                 params: { projectId, assignedMemberId, pageNo, pageSize },
@@ -215,13 +215,129 @@ export const getAllProjectMembersTasksByProject = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            return response.data.data; 
+            return response.data.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Görevler getirilirken bir hata oluştu.");
         }
     }
 );
 
+export const getUsersAllTasks = createAsyncThunk(
+    "task/getUsersAllTasks",
+    async ({ pageNo = 1, pageSize = 10, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_TASK}/get-users-all-tasks`,
+                {
+                    params: { pageNo, pageSize },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Kullanıcının görevleri getirilirken bir hata oluştu."
+            );
+        }
+    }
+);
+
+export const getUsersTasksByStatus = createAsyncThunk(
+    "task/getUsersTasksByStatus",
+    async (
+        { status, pageNo = 1, pageSize = 10, token },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_TASK}/get-all-users-tasks-by-status`,
+                {
+                    params: { status, pageNo, pageSize },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Kullanıcının görevleri status'e göre getirilirken hata oluştu."
+            );
+        }
+    }
+);
+
+export const changeTaskStatusToInProgress = createAsyncThunk(
+    "task/changeTaskStatusToInProgress",
+    async ({ taskId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_TASK}/change-task-status-to-in-progress`,
+                null,
+                {
+                    params: { taskId },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Görev durumu güncellenirken bir hata oluştu."
+            );
+        }
+    }
+);
+
+export const changeTaskStatusToReview = createAsyncThunk(
+    "task/changeTaskStatusToReview",
+    async ({ taskId, token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(
+                `${API_URL_TASK}/change-task-status-to-review`,
+                null,
+                {
+                    params: { taskId },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Görev durumu REVIEW yapılırken hata oluştu."
+            );
+        }
+    }
+);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const taskSlice = createSlice({
@@ -337,7 +453,7 @@ export const taskSlice = createSlice({
             })
             .addCase(getProjectTasksAssignedToMember.fulfilled, (state, action) => {
                 state.loading = false;
-                state.tasks = action.payload.taskDtos; 
+                state.tasks = action.payload.taskDtos;
                 state.totalPages = action.payload.totalPages;
                 state.totalElements = action.payload.totalElements;
             })
@@ -345,7 +461,7 @@ export const taskSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || "Görevler getirilemedi.";
             })
-             .addCase(getAllProjectMembersTasksByProject.pending, (state) => {
+            .addCase(getAllProjectMembersTasksByProject.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
@@ -358,7 +474,83 @@ export const taskSlice = createSlice({
             .addCase(getAllProjectMembersTasksByProject.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Görevler getirilemedi.";
-            });
+            })
+            .addCase(getUsersAllTasks.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUsersAllTasks.fulfilled, (state, action) => {
+                state.loading = false;
+
+                state.tasks = action.payload.taskDtos;
+                state.totalPages = action.payload.totalPages;
+                state.totalElements = action.payload.totalElements;
+            })
+            .addCase(getUsersAllTasks.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
+            })
+            .addCase(getUsersTasksByStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUsersTasksByStatus.fulfilled, (state, action) => {
+                state.loading = false;
+
+                state.tasks = action.payload.taskDtos;
+                state.totalPages = action.payload.totalPages;
+                state.totalElements = action.payload.totalElements;
+            })
+            .addCase(getUsersTasksByStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
+            })
+            .addCase(changeTaskStatusToInProgress.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeTaskStatusToInProgress.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedTask = action.payload;
+
+                const index = state.tasks.findIndex(
+                    (t) => t.taskId === updatedTask.taskId
+                );
+
+                if (index !== -1) {
+                    state.tasks[index] = updatedTask;
+                }
+
+                state.task = updatedTask;
+            })
+            .addCase(changeTaskStatusToInProgress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görev durumu güncellenemedi.";
+            })
+            .addCase(changeTaskStatusToReview.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeTaskStatusToReview.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const updatedTask = action.payload;
+
+                const index = state.tasks.findIndex(
+                    (t) => t.taskId === updatedTask.taskId
+                );
+
+                if (index !== -1) {
+                    state.tasks[index] = updatedTask;
+                }
+
+                state.task = updatedTask;
+            })
+            .addCase(changeTaskStatusToReview.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görev REVIEW durumuna alınamadı.";
+            })
 
     }
 });

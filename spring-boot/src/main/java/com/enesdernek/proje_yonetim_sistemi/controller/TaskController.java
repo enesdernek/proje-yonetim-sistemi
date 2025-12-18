@@ -80,6 +80,18 @@ public class TaskController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	@PutMapping("/change-task-status-to-review")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<TaskDto>> changeTaskStatusToReview(Authentication auth, Long taskId) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDto> result = new SuccessDataResult<>(this.taskService.changeTaskStatusToReview(authUserId, taskId),
+				"Görev başarıyla güncellendi.");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	@PutMapping("/update-task")
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<SuccessDataResult<TaskDto>> updateTask(Authentication auth, Long taskId,@Valid @RequestBody TaskDtoIU taskDtoIU) {
@@ -182,6 +194,19 @@ public class TaskController {
 		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
 				this.taskService.getAllProjectMembersTaskByProject(authUserId, assignedMemberId,projectId, pageNo, pageSize),
 				"Görevler başarıyla getirildi");
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@GetMapping("/get-all-users-tasks-by-status")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<TaskDtoPagedResponse>> getAllUsersTasksByStatus(Authentication auth, TaskStatus status, int pageNo, int pageSize) {
+		User user = (User) auth.getPrincipal();
+		Long authUserId = user.getUserId();
+		
+		SuccessDataResult<TaskDtoPagedResponse> result = new SuccessDataResult<>(
+				this.taskService.getAllUsersTasksByStatus(authUserId, status, pageNo, pageSize),
+				"Görevler başarıyla getirildi ve filtrelendi.");
 
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

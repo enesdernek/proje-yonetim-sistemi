@@ -18,6 +18,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 	@Query(value = "SELECT * FROM tasks WHERE project_id = :projectId ORDER BY task_id DESC", countQuery = "SELECT COUNT(*) FROM tasks WHERE project_id = :projectId", nativeQuery = true)
 	List<Task> getTasksByProjectIdPaged(Long projectId, Pageable pageable);
+	
+	List<Task>getTasksByProject_ProjectIdOrderByTaskIdDesc(Long projectId);
 
 	@Query(
 		    value = """
@@ -42,13 +44,19 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	@Query(value = "SELECT COUNT(*) FROM tasks WHERE project_id = :projectId", nativeQuery = true)
 	long countTasksByProjectId(@Param("projectId") Long projectId);
 	
-	Page<Task> findByAssignedMember_User_UserId(Long userId, Pageable pageable);
-    
+	Page<Task> findByAssignedMember_User_UserIdOrderByTaskIdDesc(Long userId, Pageable pageable);
+	    
     Page<Task> findByProject_ProjectIdAndStatus(
             Long projectId,
             TaskStatus status,
             Pageable pageable
         );
+    
+    Page<Task> findByAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(
+            Long userId,
+            TaskStatus status,
+            Pageable pageable
+    );
 
     void deleteByAssignedMember(ProjectMember member);
     void deleteByCreator(ProjectMember member);
