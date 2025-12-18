@@ -9,8 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.SystemPropertyUtils;
-
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;

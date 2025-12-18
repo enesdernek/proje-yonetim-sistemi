@@ -2,7 +2,6 @@ package com.enesdernek.proje_yonetim_sistemi.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import com.enesdernek.proje_yonetim_sistemi.entity.ProjectStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;

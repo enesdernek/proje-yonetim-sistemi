@@ -4,7 +4,7 @@ import  { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import * as yup from "yup";
-import { changePhoneNumber, clearMessage, clearSuccessMessage, resendMailVerification } from '../redux/slices/userSlice';
+import { changePhoneNumber, clearMessage, clearSuccessMessage } from '../redux/slices/userSlice';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import PhoneIcon from '@mui/icons-material/Phone';

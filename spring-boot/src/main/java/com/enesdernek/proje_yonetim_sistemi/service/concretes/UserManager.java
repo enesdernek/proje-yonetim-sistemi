@@ -54,7 +54,6 @@ import com.enesdernek.proje_yonetim_sistemi.repository.EmailChangeTokenRepositor
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.PasswordResetTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
-import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.TaskRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.EmailService;

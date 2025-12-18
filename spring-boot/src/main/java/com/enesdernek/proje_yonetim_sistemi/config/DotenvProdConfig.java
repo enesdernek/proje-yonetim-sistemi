@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import io.github.cdimascio.dotenv.Dotenv;
 
 @Configuration
-@Profile("prod") // production profili için
+@Profile("prod") 
 public class DotenvProdConfig {
     static {
         Dotenv dotenv = Dotenv.configure()

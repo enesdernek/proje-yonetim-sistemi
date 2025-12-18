@@ -1,11 +1,7 @@
 package com.enesdernek.proje_yonetim_sistemi.service.abstracts;
-
-import java.util.List;
-
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoPagedResponse;
-import com.enesdernek.proje_yonetim_sistemi.dto.TaskDtoUpdate;
 import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
 public interface TaskService {
