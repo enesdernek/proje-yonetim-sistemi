@@ -23,7 +23,6 @@ function SearchUserPage() {
 
     const userList = useSelector((state) => state.user?.userList || []);
     const token = useSelector((state) => state.user.token);
-    const user = useSelector((state) => state.user.user)
     const isConnectedMap = useSelector((state) => state.connection.isConnectedMap) || {};
     const connectionLoading = useSelector((state) => state.connection.loading);
     const requestLoading = useSelector((state) => state.connectionRequest.loading);
@@ -39,7 +38,6 @@ function SearchUserPage() {
         dispatch(searchUser({ searchInput, token }));
     };
 
-    // Her kullanıcı için bağlantı durumunu getir
     useEffect(() => {
         if (userList.length > 0) {
             userList.forEach((u) => {
@@ -48,7 +46,6 @@ function SearchUserPage() {
         }
     }, [userList, token, dispatch]);
 
-    // Navigasyon değişince listeyi temizle
     useEffect(() => {
         dispatch(clearUserList());
     }, [navigate, dispatch]);
@@ -59,7 +56,6 @@ function SearchUserPage() {
                 Kullanıcı Ara
             </Typography>
 
-            {/* Search Input */}
             <Stack direction="row" spacing={2}>
                 <TextField
                     fullWidth
@@ -81,7 +77,6 @@ function SearchUserPage() {
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Liste */}
             {userList.filter(user => user.userId !== authUserId).length === 0 ? (
                 <Typography sx={{ mt: 2, color: "gray" }}>
                     Arama sonucu bulunamadı.
@@ -116,7 +111,6 @@ function SearchUserPage() {
                                             </Typography>
                                         </Box>
 
-                                        {/* Bağlantı Durumu */}
                                         {(connectionLoading || requestLoading) ? (
                                             <Button variant="contained" disabled>
                                                 Yükleniyor...

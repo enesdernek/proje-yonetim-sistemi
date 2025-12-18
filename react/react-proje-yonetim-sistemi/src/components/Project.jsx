@@ -250,6 +250,7 @@ function Project() {
                                 </Button>
 
                                 <Button
+                                onClick={()=>navigate("/projects/"+projectId+"/project-statistics")}
                                     variant="contained"
                                     sx={{
                                         textTransform: "none",
@@ -285,7 +286,7 @@ function Project() {
                         <Chip
                             label={STATUS_LABELS[project.status] || project.status}
                             sx={{
-                                backgroundColor: "#e3f2fd", // açık mavi arka plan
+                                backgroundColor: "#e3f2fd", 
                                 color: STATUS_COLORS[project.status] || "#1976d2",
                                 fontWeight: 600,
                             }}
@@ -349,7 +350,7 @@ function Project() {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
-                                flexDirection: { xs: "column", sm: "row" }, // 👈 küçük ekranda alt alta
+                                flexDirection: { xs: "column", sm: "row" }, 
                                 mt: 1,
                             }}
                         >
@@ -359,7 +360,7 @@ function Project() {
                                     textTransform: "none",
                                     backgroundColor: "#BAE1FF",
                                     color: "black",
-                                    width: { xs: "100%", sm: "auto" }, // mobilde tam genişlik
+                                    width: { xs: "100%", sm: "auto" }, 
                                 }}
                                 onClick={() => {
                                     navigate(`/projects/${projectId}/my-tasks/${userId}`);

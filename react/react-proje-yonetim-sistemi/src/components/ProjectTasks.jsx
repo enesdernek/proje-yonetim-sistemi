@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -41,7 +41,6 @@ function ProjectTasks() {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-    // Görevleri getir
     const fetchTasks = () => {
         if (!statusFilter) {
             dispatch(getTasksByProjectId({ projectId, pageNo: page, pageSize: 5, token }));
@@ -55,7 +54,6 @@ function ProjectTasks() {
     const handlePageChange = (event, value) => setPage(value);
     const handleStatusChange = (e) => { setStatusFilter(e.target.value); setPage(1); };
 
-    // Silme dialog
     const openDeleteDialog = (task) => { setSelectedTask(task); setDeleteDialogOpen(true); };
     const closeDeleteDialog = () => { setSelectedTask(null); setDeleteDialogOpen(false); };
 
@@ -90,7 +88,6 @@ function ProjectTasks() {
         }
     };
 
-    // Güncelleme dialog
     const openUpdateDialog = (task) => {
         setSelectedTask(task);
         setUpdateForm({
@@ -155,7 +152,6 @@ function ProjectTasks() {
 
     return (
         <Box sx={{ px: 2, py: 1 }}>
-            {/* AppBar */}
             <AppBar position="static" color="primary" sx={{ mb: 2 }}>
                 <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="h6">Görevler</Typography>
@@ -169,7 +165,6 @@ function ProjectTasks() {
                 </Toolbar>
             </AppBar>
 
-            {/* Tablo */}
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -239,10 +234,8 @@ function ProjectTasks() {
                 </Table>
             </TableContainer>
 
-            {/* Pagination */}
             {totalPages > 1 && <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}><Pagination count={totalPages} page={page} onChange={handlePageChange} /></Box>}
 
-            {/* Silme Dialog */}
             <Dialog open={deleteDialogOpen} onClose={closeDeleteDialog}>
                 <DialogTitle>Görevi Sil</DialogTitle>
                 <DialogContent>
@@ -256,7 +249,6 @@ function ProjectTasks() {
                 </DialogActions>
             </Dialog>
 
-            {/* Güncelleme Dialog (büyütülmüş) */}
             <Dialog open={updateDialogOpen} onClose={closeUpdateDialog} maxWidth="md" fullWidth>
                 <DialogTitle>Görevi Güncelle</DialogTitle>
                 <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
@@ -306,7 +298,6 @@ function ProjectTasks() {
                 </DialogActions>
             </Dialog>
 
-            {/* Snackbar */}
             <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>
                 <Alert severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}

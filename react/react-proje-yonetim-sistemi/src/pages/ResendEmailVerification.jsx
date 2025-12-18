@@ -1,6 +1,5 @@
 import { Alert, Box, Button, CircularProgress, FormControl, FormHelperText, Input, InputAdornment, InputLabel, Typography } from '@mui/material';
 import { useFormik } from 'formik';
-import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import * as yup from "yup";
@@ -27,7 +26,6 @@ function ResendEmailVerification() {
     });
 
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const loading = useSelector((state) => state.user.loading);
     const error = useSelector((state) => state.user.error);
     const successMessage = useSelector((state) => state.user.successMessage);

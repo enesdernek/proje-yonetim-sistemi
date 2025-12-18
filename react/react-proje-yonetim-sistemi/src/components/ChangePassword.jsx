@@ -1,10 +1,9 @@
 import { Alert, Box, Button, CircularProgress, FormControl, FormHelperText, Input, InputAdornment, InputLabel, Typography } from '@mui/material';
 import { useFormik } from 'formik';
-import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import * as yup from "yup";
-import { changePassword, clearMessage, clearSuccessMessage, resendMailVerification, resetPasswordMail } from '../redux/slices/userSlice';
+import { changePassword, clearMessage, clearSuccessMessage, resetPasswordMail } from '../redux/slices/userSlice';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import PasswordIcon from '@mui/icons-material/Password';

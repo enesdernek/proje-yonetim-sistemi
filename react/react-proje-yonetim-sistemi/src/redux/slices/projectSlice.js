@@ -107,7 +107,6 @@ export const uploadProjectImage = createAsyncThunk(
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        // axios otomatik boundary ekler
                         "Content-Type": "multipart/form-data",
                     }
                 }
@@ -117,7 +116,6 @@ export const uploadProjectImage = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            // SuccessDataResult<ProjectDto>
             return response.data.data;
         } catch (err) {
             return rejectWithValue(
@@ -144,7 +142,6 @@ export const deleteProjectImage = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            // SuccessDataResult<ProjectDto>
             return response.data.data;
         } catch (err) {
             return rejectWithValue(
@@ -154,7 +151,6 @@ export const deleteProjectImage = createAsyncThunk(
     }
 );
 
-// PROJE İPTAL
 export const cancelProject = createAsyncThunk(
     "project/cancelProject",
     async ({ projectId, token }, { rejectWithValue }) => {
@@ -173,7 +169,7 @@ export const cancelProject = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            return response.data.data; // ProjectDto
+            return response.data.data; 
         } catch (err) {
             return rejectWithValue(
                 err.response?.data?.message || "Proje iptal edilirken hata oluştu."
@@ -182,7 +178,6 @@ export const cancelProject = createAsyncThunk(
     }
 );
 
-// PROJE BEKLEMEYE AL
 export const onHoldProject = createAsyncThunk(
     "project/onHoldProject",
     async ({ projectId, token }, { rejectWithValue }) => {
@@ -210,7 +205,6 @@ export const onHoldProject = createAsyncThunk(
     }
 );
 
-// PROJE BAŞLAT
 export const startProject = createAsyncThunk(
     "project/startProject",
     async ({ projectId, token }, { rejectWithValue }) => {
@@ -270,7 +264,6 @@ export const createProject = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            // SuccessDataResult<ProjectDto>
             return response.data.data;
         } catch (err) {
             return rejectWithValue(
@@ -281,7 +274,6 @@ export const createProject = createAsyncThunk(
     }
 );
 
-// PROJEYİ TEKRAR HAYATA GEÇİR
 export const restartProject = createAsyncThunk(
     "project/restartProject",
     async ({ projectId, token }, { rejectWithValue }) => {
@@ -300,7 +292,6 @@ export const restartProject = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            // SuccessDataResult<ProjectDto>
             return response.data.data;
         } catch (err) {
             return rejectWithValue(
@@ -356,7 +347,6 @@ export const deleteProjectByProjectId = createAsyncThunk(
                 return rejectWithValue(response.data.message);
             }
 
-            // SuccessResult (data yok)
             return { projectId };
         } catch (err) {
             return rejectWithValue(
@@ -528,7 +518,6 @@ export const projectSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // ON HOLD PROJECT
             .addCase(onHoldProject.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -552,7 +541,6 @@ export const projectSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // START PROJECT
             .addCase(startProject.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -584,10 +572,8 @@ export const projectSlice = createSlice({
 
                 const createdProject = action.payload;
 
-                // Detay sayfası için
                 state.project = createdProject;
 
-                // Listeye ekle (en üste ekledim)
                 state.projects.unshift(createdProject);
             })
             .addCase(createProject.rejected, (state, action) => {

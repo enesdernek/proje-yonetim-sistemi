@@ -36,6 +36,7 @@ function ProjectBreadcrumbs() {
     "create-task": "Görev Oluştur",
     tasks: "Görevler",
     "my-tasks": "Görevlerim",
+    "project-statistics":"Proje İstatistikleri"
   };
 
   const breadcrumbs = [];

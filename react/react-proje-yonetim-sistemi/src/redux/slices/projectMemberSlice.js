@@ -366,7 +366,6 @@ export const projectMemberSlice = createSlice({
     }
 })
 
-// Action creators are generated for each case reducer function
 export const { } = projectMemberSlice.actions
 
 export default projectMemberSlice.reducer

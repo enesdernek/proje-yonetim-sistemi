@@ -81,7 +81,6 @@ export default function Connections() {
 
     return (
         <Box sx={{ maxWidth: 700, mx: 'auto', mt: 4, p: 2 }}>
-            {/* Başlık */}
             <Typography variant="h4" fontWeight="bold" mb={3} textAlign="center" color="primary">
                 Bağlantılarım
             </Typography>
@@ -139,7 +138,6 @@ export default function Connections() {
                 </Box>
             )}
 
-            {/* Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Bağlantıyı Kaldır</DialogTitle>
                 <DialogContent>

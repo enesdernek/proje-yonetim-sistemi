@@ -132,7 +132,7 @@ export const createConnectionRequest = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
 
-      return response.data.data; // created ConnectionRequestDto
+      return response.data.data; 
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Bağlantı isteği gönderilirken bir hata oluştu"
@@ -286,7 +286,7 @@ export const connectionRequestSlice = createSlice({
       .addCase(createConnectionRequest.fulfilled, (state, action) => {
         state.loading = false;
         const newRequest = action.payload;
-        state.sendedConnectionRequests.unshift(newRequest); // gönderilen isteklere ekle
+        state.sendedConnectionRequests.unshift(newRequest); 
         state.successMessage = "Bağlantı isteği gönderildi.";
       })
       .addCase(createConnectionRequest.rejected, (state, action) => {

@@ -47,19 +47,18 @@ public class ProjectStatisticsManager implements ProjectStatisticsService {
                 .filter(task -> task.getStatus() == TaskStatus.DONE)
                 .count();
         int pendingTasks = totalTasks - completedTasks;
-        double completionRate = totalTasks == 0 ? 0.0 : ((double) completedTasks / totalTasks) * 100;
 
         int totalMembers = project.getMembers().size();
 
         ProjectDto projectDto = projectMapper != null ? projectMapper.toDto(project) : null;
 
         ProjectStatisticsDto dto = new ProjectStatisticsDto();
+        dto.setCompletionRate(projectDto.getProgress());
         dto.setStatsId(project.getProjectId()); 
         dto.setProjectDto(projectDto);
         dto.setTotalTasks(totalTasks);
         dto.setCompletedTasks(completedTasks);
         dto.setPendingTasks(pendingTasks);
-        dto.setCompletionRate(completionRate);
         dto.setTotalMembers(totalMembers);
 
         return dto;

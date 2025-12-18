@@ -21,7 +21,6 @@ function Sidebar() {
         { id: "connections", label: "Bağlantılarım", icon: <LinkIcon />, path: "/connections" },
     ];
 
-    // URL path'e göre selected item otomatik belirlensin
     const [selected, setSelected] = useState("");
 
     useEffect(() => {

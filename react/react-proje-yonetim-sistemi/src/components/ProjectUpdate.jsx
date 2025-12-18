@@ -117,7 +117,6 @@ function ProjectUpdate() {
     }
   };
 
-  // 🔹 Resim sil
   const handleDeleteImage = async () => {
     const resultAction = await dispatch(
       deleteProjectImage({
@@ -162,7 +161,6 @@ function ProjectUpdate() {
             Proje Ayarları
           </Typography>
 
-          {/* 🔹 PROJE BİLGİLERİ */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mt: 2 }}>
             Proje Bilgileri
           </Typography>

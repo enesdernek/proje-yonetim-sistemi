@@ -5,8 +5,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useDispatch, useSelector } from 'react-redux';
-import { authenticate, clearMessage, clearSuccessMessage, resendMailVerification } from '../redux/slices/userSlice';
-import { useEffect, useState } from 'react';
+import { authenticate, clearMessage, clearSuccessMessage } from '../redux/slices/userSlice';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({

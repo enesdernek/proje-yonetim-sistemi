@@ -188,7 +188,6 @@ function CreateTask() {
         </form>
       </Paper>
 
-      {/* SNACKBAR */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

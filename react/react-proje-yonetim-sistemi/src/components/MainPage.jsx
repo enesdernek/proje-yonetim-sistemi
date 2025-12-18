@@ -13,7 +13,6 @@ function MainPage({ drawerOpen, toggleDrawer }) {
 
       <Grid container sx={{ width: "100%" }}>
 
-        {/* Desktop Sidebar */}
         <Grid
           sx={{
             display: { xs: "none", md: "block" },
@@ -26,7 +25,6 @@ function MainPage({ drawerOpen, toggleDrawer }) {
 
 
 
-        {/* Content */}
         <Grid
           size={{ xs: 12, sm: 12, md: 10 }}
         >

@@ -24,7 +24,7 @@ function ProjectSettings() {
     const [deleteError, setDeleteError] = useState("");
 
     const handleDelete = async () => {
-        setDeleteError(""); // eski hatayı temizle
+        setDeleteError(""); 
 
         const resultAction = await dispatch(
             deleteProjectByProjectId({
@@ -40,7 +40,6 @@ function ProjectSettings() {
             return;
         }
 
-        // başarılıysa
         setOpenConfirm(false);
         navigate("/projects");
     };
@@ -68,7 +67,6 @@ function ProjectSettings() {
                 Projeyi Sil
             </Button>
 
-            {/* ONAY DIALOG */}
             <Dialog
                 open={openConfirm}
                 onClose={() => setOpenConfirm(false)}
@@ -92,7 +90,6 @@ function ProjectSettings() {
                         Bu işlem geri alınamaz.
                     </Typography>
 
-                    {/* ❌ HATA MESAJI */}
                     {deleteError && (
                         <Typography
                             variant="body2"

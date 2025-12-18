@@ -1,4 +1,3 @@
-import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Authenticate from '../pages/Authenticate'
 import MainPage from '../components/MainPage'
@@ -22,8 +21,6 @@ import Connections from '../components/Connections'
 import ProjectList from '../components/ProjectList'
 import TaskList from '../components/TaskList'
 import Project from '../components/Project'
-import { useSelector } from 'react-redux'
-import { Navigate } from "react-router-dom";
 import ProtectedRoute from './ProtectedRoute'
 import NotAuthenticated from '../components/NotAuthenticated'
 import ProjectAddMember from '../components/ProjectAddMember'
@@ -35,6 +32,7 @@ import CreateTask from '../components/CreateTask'
 import ProjectTasks from '../components/ProjectTasks'
 import ProjectMembersTasks from '../components/ProjectMembersTasks'
 import UsersProjectTasks from '../components/UsersProjectTasks'
+import ProjectStatistics from '../components/ProjectStatistics'
 
 
 function MainContent({ drawerOpen, toggleDrawer }) {
@@ -71,6 +69,7 @@ function MainContent({ drawerOpen, toggleDrawer }) {
         <Route path="projects/:projectId/:memberId/create-task" element={<CreateTask />} />
         <Route path="projects/:projectId/my-tasks/:userId" element={<UsersProjectTasks />} />
         <Route path="projects/:projectId/tasks" element={<ProjectTasks />} />
+        <Route path="projects/:projectId/project-statistics" element={<ProjectStatistics />} />
         <Route path="projects/create-project" element={<ProjectCreate />} />
         <Route path="tasks" element={<TaskList />} />
       </Route>

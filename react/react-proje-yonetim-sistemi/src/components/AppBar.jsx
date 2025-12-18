@@ -5,7 +5,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { Avatar, Badge, Button } from '@mui/material';
@@ -19,7 +18,7 @@ import { getUsersRecievedConnectionRequests } from '../redux/slices/connectionRe
 
 
 const API_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = API_URL.replace("/api", ""); // http://localhost:8080
+const BASE_URL = API_URL.replace("/api", ""); 
 
 export default function MenuAppBar({ onMenuClick }) {
 

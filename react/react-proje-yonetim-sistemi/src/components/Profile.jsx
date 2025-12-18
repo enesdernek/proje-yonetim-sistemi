@@ -15,7 +15,7 @@ import userPlaceholderImage from "../files/placeholder-images/user-placeholder.j
 
 
 const API_URL = import.meta.env.VITE_API_URL;
-const BASE_URL = API_URL.replace("/api", ""); 
+const BASE_URL = API_URL.replace("/api", "");
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -75,7 +75,6 @@ export default function Profile() {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              {/* Profil Resmi */}
               <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative', mb: 3 }}>
                 <Box sx={{ position: 'relative', display: 'inline-block' }}>
                   <Avatar
@@ -165,11 +164,30 @@ export default function Profile() {
         </Grid>
       </Grid>
 
-      {/* Upload Dialog */}
       <Dialog open={openUploadDialog} onClose={handleCloseUploadDialog}>
         <DialogTitle>Profil Resmi Yükle</DialogTitle>
         <DialogContent>
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={<PhotoCameraIcon />}
+            >
+              Dosya Seç
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleFileChange}
+              />
+            </Button>
+
+            {selectedFile && (
+              <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                {selectedFile.name}
+              </Typography>
+            )}
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseUploadDialog}>İptal</Button>
@@ -179,7 +197,6 @@ export default function Profile() {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
         <DialogTitle>Profil Resmini Sil</DialogTitle>
         <DialogContent>

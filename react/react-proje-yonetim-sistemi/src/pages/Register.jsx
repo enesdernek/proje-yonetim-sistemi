@@ -77,13 +77,11 @@ function Register() {
             };
 
             try {
-                // REGISTER → throw yakalar
                 await dispatch(register(user)).unwrap();
 
                 navigate("/register-approved");
 
             } catch (error) {
-                // HATA ALINCA BURAYA GELİR
                 console.log("Register Error:", error);
             }
         }
@@ -132,7 +130,6 @@ function Register() {
                         Hesap Oluştur
                     </Typography>
 
-                    {/* İsim */}
                     <FormControl variant="standard">
                         <InputLabel>Kullanıcı Adı</InputLabel>
                         <Input
@@ -153,7 +150,6 @@ function Register() {
 
 
 
-                    {/* Email */}
                     <FormControl variant="standard">
                         <InputLabel>Email</InputLabel>
                         <Input
@@ -173,7 +169,6 @@ function Register() {
                         <FormHelperText error>{formik.errors.email}</FormHelperText>
                     )}
 
-                    {/* Şifre */}
                     <FormControl variant="standard">
                         <InputLabel>Şifre</InputLabel>
                         <Input
@@ -193,7 +188,6 @@ function Register() {
                         <FormHelperText error>{formik.errors.password}</FormHelperText>
                     )}
 
-                    {/* Şifre tekrar */}
                     <FormControl variant="standard">
                         <InputLabel>Şifre Tekrar</InputLabel>
                         <Input
@@ -213,7 +207,6 @@ function Register() {
                         <FormHelperText error>{formik.errors.passwordCheck}</FormHelperText>
                     )}
 
-                    {/* Telefon */}
                     <FormControl variant="standard">
                         <InputLabel>Telefon</InputLabel>
                         <Input
@@ -236,7 +229,6 @@ function Register() {
                         <FormHelperText error>{formik.errors.phone}</FormHelperText>
                     )}
 
-                    {/* Adres */}
                     <FormControl variant="standard">
                         <InputLabel>Adres</InputLabel>
                         <Input
@@ -255,7 +247,6 @@ function Register() {
                         <FormHelperText error>{formik.errors.address}</FormHelperText>
                     )}
 
-                    {/* Şartlar */}
                     <FormControl error={formik.touched.term && Boolean(formik.errors.term)}>
                         <FormControlLabel
                             control={
@@ -272,7 +263,6 @@ function Register() {
                         )}
                     </FormControl>
 
-                    {/* Submit Butonu */}
                     <Button
                         variant="contained"
                         type="submit"
@@ -312,7 +302,6 @@ function Register() {
                         </Alert>
                     )}
 
-                    {/* Link */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                         <Typography
                             variant="body2"

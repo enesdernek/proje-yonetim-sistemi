@@ -1,10 +1,9 @@
 import { Alert, Box, Button, CircularProgress, FormControl, FormHelperText, Input, InputAdornment, InputLabel, Typography } from '@mui/material';
 import { useFormik } from 'formik';
-import React, { useEffect } from 'react'
+import  { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import * as yup from "yup";
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import { changePhoneNumber, clearMessage, clearSuccessMessage, resendMailVerification } from '../redux/slices/userSlice';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
@@ -47,7 +46,7 @@ function ChangePhonePage() {
                 navigate("/account-settings");
             }, 500);
 
-            return () => clearTimeout(timer); // temizleme
+            return () => clearTimeout(timer); 
         }
     }, [successMessage, navigate]);
 

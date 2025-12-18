@@ -78,7 +78,7 @@ function ProjectManagement() {
             getTasksByProjectId({
                 projectId,
                 pageNo: 1,
-                pageSize: 1000, 
+                pageSize: 1000,
                 token
             })
         );
@@ -174,6 +174,8 @@ function ProjectManagement() {
         );
     }
 
+
+
     return (
         <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
             <Card sx={{ borderRadius: 3, boxShadow: 4 }}>
@@ -258,7 +260,7 @@ function ProjectManagement() {
                             </>
                         )}
 
-                        {project.status === "CANCELLED" || project.status === "COMPLETED" && (
+                        {(project.status === "CANCELLED" || project.status === "COMPLETED") && (
                             <Button
                                 variant="contained"
                                 color="success"

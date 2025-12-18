@@ -40,7 +40,6 @@ function UsersProfile() {
 
     const isConn = isConnectedMap[userId];
 
-    // Pending request backend state'e göre belirleniyor
     const pendingRequestFromStore = sendedRequests.find(
         (req) => req.receiverId === Number(userId) && req.status === "PENDING"
     );
@@ -55,7 +54,7 @@ function UsersProfile() {
     }, [userId, token]);
 
     useEffect(() => {
-        setLocalPending(!!pendingRequestFromStore); // sadece backend'de PENDING varsa true
+        setLocalPending(!!pendingRequestFromStore); 
     }, [pendingRequestFromStore]);
 
     const handleConnect = () => {
@@ -72,7 +71,6 @@ function UsersProfile() {
             .unwrap()
             .catch((err) => {
                 if (err === "İstek önceden kabul edilmiş" || err === "İstek önceden reddedilmiş") {
-                    // UI'yi approved/rejected duruma göre güncelle
                     setLocalPending(false);
                 }
             });
@@ -178,7 +176,7 @@ function UsersProfile() {
                                         variant="contained"
                                         color="error"
                                         onClick={handleDeleteRequest}
-                                        disabled={!pendingRequestFromStore} // sadece PENDING istek
+                                        disabled={!pendingRequestFromStore} 
                                     >
                                         İsteği İptal Et
                                     </Button>

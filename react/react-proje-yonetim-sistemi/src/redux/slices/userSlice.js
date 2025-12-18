@@ -243,7 +243,7 @@ export const uploadProfilePicture = createAsyncThunk(
     async ({ file, token }, { rejectWithValue }) => {
         try {
             const formData = new FormData();
-            formData.append("file", file); // backend @RequestParam("file")
+            formData.append("file", file); 
 
             const response = await axios.post(
                 `${API_URL_USER}/upload-profile-image`,
@@ -493,7 +493,7 @@ export const userSlice = createSlice({
         builder.addCase(verifyEmail.fulfilled, (state, action) => {
             state.error = null;
             state.loading = false;
-            state.successMessage = action.payload; // artık direkt mesaj
+            state.successMessage = action.payload; 
         })
         builder.addCase(verifyEmail.pending, (state) => {
             state.loading = true
