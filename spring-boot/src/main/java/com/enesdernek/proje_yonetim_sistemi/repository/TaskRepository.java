@@ -62,6 +62,19 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     void deleteByCreator(ProjectMember member);
     void deleteAllByProject_ProjectId(Long projectId);
     
+    Page<Task> findByProject_ProjectIdAndAssignedMember_User_UserIdOrderByTaskIdDesc(
+            Long projectId,
+            Long userId,
+            Pageable pageable
+    );
+
+    Page<Task> findByProject_ProjectIdAndAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(
+            Long projectId,
+            Long userId,
+            TaskStatus status,
+            Pageable pageable
+    );
+    
     
 
     

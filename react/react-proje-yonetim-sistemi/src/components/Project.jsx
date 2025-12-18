@@ -230,6 +230,8 @@ function Project() {
                             {project.name}
                         </Typography>
 
+
+
                         {userRole === "MANAGER" && (
                             <Box
                                 sx={{
@@ -308,31 +310,66 @@ function Project() {
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="h6" fontWeight="bold">
                             Proje Üyeleri
+
                             {userRole === "MANAGER" && (
                                 <Button
-                                    onClick={() => navigate(`/projects/${project.projectId}/add-member`)}
+                                    onClick={() =>
+                                        navigate(`/projects/${project.projectId}/add-member`)
+                                    }
                                     variant="contained"
                                     color="success"
                                     sx={{ textTransform: "none", ml: 1, padding: "5px 10px" }}
                                 >
-                                    <AddIcon sx={{ mr: 0 }} /> Üye Ekle
+                                    <AddIcon /> Üye Ekle
                                 </Button>
                             )}
+
+
+
                         </Typography>
 
-                        {
-                            userRole === "MANAGER" && (
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                flexDirection: { xs: "column", sm: "row" }, // 👈 küçük ekranda alt alta
+                                mt: 1,
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                sx={{
+                                    textTransform: "none",
+                                    backgroundColor: "#BAE1FF",
+                                    color: "black",
+                                    width: { xs: "100%", sm: "auto" }, // mobilde tam genişlik
+                                }}
+                                onClick={() => {
+                                    navigate(`/projects/${projectId}/my-tasks/${userId}`);
+                                }}
+                            >
+                                <PreviewIcon sx={{ mr: 1 }} />
+                                Projedeki Görevlerimi Görüntüle
+                            </Button>
+
+                            {userRole === "MANAGER" && (
                                 <Button
                                     onClick={() => navigate(`/projects/${project.projectId}/tasks`)}
                                     variant="contained"
-                                    sx={{ textTransform: "none", backgroundColor: "#FDCC0D", color: "black" }}
-
+                                    sx={{
+                                        textTransform: "none",
+                                        backgroundColor: "#FDCC0D",
+                                        color: "black",
+                                        width: { xs: "100%", sm: "auto" },
+                                    }}
                                 >
-                                    <PreviewIcon sx={{ mr: 1 }} />  Bütün Görevleri Görüntüle
+                                    <PreviewIcon sx={{ mr: 1 }} />
+                                    Bütün Görevleri Görüntüle
                                 </Button>
-                            )
-                        }
-
+                            )}
+                        </Box>
 
                     </Box>
 
@@ -340,7 +377,7 @@ function Project() {
                         direction={{ xs: "column", sm: "row" }}
                         spacing={1}
                         sx={{
-                            ml: { sm: "auto" },     // sadece desktop’ta sağa yasla
+                            ml: { sm: "auto" },     
                             width: { xs: "100%", sm: "auto" },
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -427,7 +464,7 @@ function Project() {
                                             </span>
                                         </Typography>
 
-                                       
+
                                     </Box>
 
                                     {isCurrentUser && (

@@ -205,14 +205,16 @@ public class TaskManager implements TaskService {
 
 		return response;
 	}
-	
+
 	@Override
 	public TaskDtoPagedResponse getAllUsersTasksByStatus(Long userId, TaskStatus status, int pageNo, int pageSize) {
-		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı"));
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
-		Page<Task> tasks = this.taskRepository.findByAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(userId, status, pageable);
+		Page<Task> tasks = this.taskRepository.findByAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(userId,
+				status, pageable);
 
 		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
 		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
@@ -251,7 +253,7 @@ public class TaskManager implements TaskService {
 
 	@Override
 	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId) {
-				
+
 		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
 
 		ProjectMember projectMember = this.projectMemberRepository
@@ -324,9 +326,10 @@ public class TaskManager implements TaskService {
 	@Override
 	public TaskDto changeTaskStatusToReview(Long authUserId, Long taskId) {
 		Task task = this.taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Görev bulunamadı."));
-		User user = this.userRepository.findById(authUserId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
-		
-		if(task.getAssignedMember().getUser().getUserId() != authUserId) {
+		User user = this.userRepository.findById(authUserId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		if (task.getAssignedMember().getUser().getUserId() != authUserId) {
 			throw new UnauthorizedActionException("Bunu yapmaya yetkiniz yok.");
 		}
 		task.setStatus(TaskStatus.REVIEW);
@@ -334,6 +337,54 @@ public class TaskManager implements TaskService {
 		return this.taskMapper.toDto(task);
 	}
 
-	
+	@Override
+	public TaskDtoPagedResponse getAllUsersTasksByProjectId(Long userId, Long projectId, int pageNo, int pageSize) {
+
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Bu projede üye değilsiniz."));
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+		Page<Task> tasks = this.taskRepository
+				.findByProject_ProjectIdAndAssignedMember_User_UserIdOrderByTaskIdDesc(projectId, userId, pageable);
+
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+
+		return response;
+	}
+
+	@Override
+	public TaskDtoPagedResponse getAllUsersTasksByProjectIdAndStatus(Long userId, Long projectId, TaskStatus status,
+			int pageNo, int pageSize) {
+
+		User user = this.userRepository.findById(userId)
+				.orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı."));
+
+		ProjectMember member = this.projectMemberRepository.findByUser_UserIdAndProject_ProjectId(userId, projectId)
+				.orElseThrow(() -> new NotFoundException("Bu projede üye değilsiniz."));
+
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+
+		Page<Task> tasks = this.taskRepository
+				.findByProject_ProjectIdAndAssignedMember_User_UserIdAndStatusOrderByTaskIdDesc(projectId, userId,
+						status, pageable);
+
+		List<TaskDto> taskDtos = tasks.hasContent() ? this.taskMapper.toDtoList(tasks.getContent()) : new ArrayList<>();
+
+		TaskDtoPagedResponse response = new TaskDtoPagedResponse();
+		response.setTaskDtos(taskDtos);
+		response.setTotalElements(tasks.getTotalElements());
+		response.setTotalPages(tasks.getTotalPages());
+
+		return response;
+	}
 
 }

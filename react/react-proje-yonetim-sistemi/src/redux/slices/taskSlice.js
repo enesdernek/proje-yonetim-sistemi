@@ -339,6 +339,68 @@ export const changeTaskStatusToReview = createAsyncThunk(
     }
 );
 
+export const getUsersTasksByProjectId = createAsyncThunk(
+    "task/getUsersTasksByProjectId",
+    async (
+        { projectId, pageNo = 1, pageSize = 10, token },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_TASK}/get-all-users-tasks-by-project`,
+                {
+                    params: { projectId, pageNo, pageSize },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Kullanıcının projedeki görevleri getirilirken hata oluştu."
+            );
+        }
+    }
+);
+
+export const getUsersTasksByProjectIdAndStatus = createAsyncThunk(
+    "task/getUsersTasksByProjectIdAndStatus",
+    async (
+        { projectId, status, pageNo = 1, pageSize = 10, token },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_TASK}/get-all-users-tasks-by-project-and-status`,
+                {
+                    params: { projectId, status, pageNo, pageSize },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message ||
+                "Kullanıcının projedeki görevleri status'e göre getirilirken hata oluştu."
+            );
+        }
+    }
+);
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const taskSlice = createSlice({
     name: "task",
@@ -550,6 +612,35 @@ export const taskSlice = createSlice({
             .addCase(changeTaskStatusToReview.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Görev REVIEW durumuna alınamadı.";
+            })
+            .addCase(getUsersTasksByProjectId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUsersTasksByProjectId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.tasks = action.payload.taskDtos || [];
+                state.totalPages = action.payload.totalPages || 0;
+                state.totalElements = action.payload.totalElements || 0;
+            })
+            .addCase(getUsersTasksByProjectId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
+            })
+
+            .addCase(getUsersTasksByProjectIdAndStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUsersTasksByProjectIdAndStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                state.tasks = action.payload.taskDtos || [];
+                state.totalPages = action.payload.totalPages || 0;
+                state.totalElements = action.payload.totalElements || 0;
+            })
+            .addCase(getUsersTasksByProjectIdAndStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Görevler getirilemedi.";
             })
 
     }

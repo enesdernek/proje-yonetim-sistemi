@@ -37,5 +37,9 @@ public interface TaskService {
 	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo, int pageSize);
 
     public TaskDtoPagedResponse getAllUsersTasksByStatus(Long userId,TaskStatus status,int pageNo, int pageSize);
+    
+    public TaskDtoPagedResponse getAllUsersTasksByProjectId(Long userId,Long projectId,int pageNo, int pageSize);
+    
+    public TaskDtoPagedResponse getAllUsersTasksByProjectIdAndStatus(Long userId,Long projectId,TaskStatus status,int pageNo, int pageSize);
 
 }

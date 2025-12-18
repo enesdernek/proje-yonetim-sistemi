@@ -12,7 +12,8 @@ import { useSelector } from "react-redux";
 function ProjectBreadcrumbs() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { projectId, memberId } = useParams();
+
+  const { projectId, memberId, userId } = useParams();
 
   const project = useSelector((state) => state.project.project);
   const projectMember = useSelector(
@@ -34,6 +35,7 @@ function ProjectBreadcrumbs() {
     "project-settings": "Proje Ayarları",
     "create-task": "Görev Oluştur",
     tasks: "Görevler",
+    "my-tasks": "Görevlerim",
   };
 
   const breadcrumbs = [];
@@ -41,10 +43,22 @@ function ProjectBreadcrumbs() {
   pathnames.forEach((value, index) => {
     const to = "/" + pathnames.slice(0, index + 1).join("/");
 
+    if (value === userId) {
+      return;
+    }
+
     if (value === projectId) {
       breadcrumbs.push({
-        label: project?.name || "Proje Detayı",
+        label: project?.name || `Proje`,
         to,
+      });
+      return;
+    }
+
+    if (value === "my-tasks") {
+      breadcrumbs.push({
+        label: "Görevlerim",
+        to: `/projects/${projectId}/my-tasks/${userId}`,
       });
       return;
     }
@@ -67,6 +81,8 @@ function ProjectBreadcrumbs() {
       to,
     });
   });
+
+  
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
