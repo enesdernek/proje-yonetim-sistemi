@@ -9,7 +9,8 @@ const initialState = {
     isAuthenticated: false,
     loading: false,
     error: null,
-    successMessage: null
+    successMessage: null,
+    userStats: null,
 }
 
 const API_URL_USER = import.meta.env.VITE_API_URL + "/users";
@@ -384,7 +385,33 @@ export const getUserByUserId = createAsyncThunk(
     }
 );
 
+export const getUserInfos = createAsyncThunk(
+    "user/getUserInfos",
+    async ({ token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(
+                `${API_URL_USER}/get-user-infos`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
+            if (!response.data.success) {
+                return rejectWithValue(response.data.message);
+            }
+
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Bir hata oluştu"
+            );
+        }
+    }
+);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -645,6 +672,24 @@ export const userSlice = createSlice({
         builder.addCase(getUserByUserId.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
+        })
+        builder.addCase(getUserInfos.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.successMessage = null;
+        });
+
+        builder.addCase(getUserInfos.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            state.userStats = action.payload.data; 
+            state.successMessage = action.payload.message;
+        });
+
+        builder.addCase(getUserInfos.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+            state.successMessage = null;
         });
 
     }

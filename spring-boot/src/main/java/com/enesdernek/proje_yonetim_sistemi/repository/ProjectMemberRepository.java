@@ -36,5 +36,8 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 	@Modifying
 
 	void deleteMember(@Param("userId") Long userId, @Param("projectId") Long projectId);
+	
+	long countByUser_UserId(Long userId);
+
 
 }

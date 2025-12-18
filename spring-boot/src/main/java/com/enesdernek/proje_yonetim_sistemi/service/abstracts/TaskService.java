@@ -10,36 +10,40 @@ import com.enesdernek.proje_yonetim_sistemi.entity.TaskStatus;
 
 public interface TaskService {
 
-	public TaskDto createTask(Long authUserId,TaskDtoIU taskDtoIU);
+	public TaskDto createTask(Long authUserId, TaskDtoIU taskDtoIU);
 
 	public TaskDto getTaskById(Long authUserId, Long taskId);
 
 	public TaskDtoPagedResponse getTasksByProjectId(Long authUserId, Long projectId, int pageNo, int pageSize);
-	
-	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,int pageNo, int pageSize);
-	
+
+	public TaskDtoPagedResponse getAllProjectTasksByStatus(Long authUserId, Long projectId, TaskStatus status,
+			int pageNo, int pageSize);
+
 	public TaskDto updateTask(Long authUserId, Long taskId, TaskDtoIU taskDtoIU);
 
 	public TaskDto changeTaskStatusToInProgress(Long authUserId, Long taskId);
-	
-	public TaskDto changeTaskStatusToDone(Long authUserId,Long taskId);
-	
-	public TaskDto changeTaskStatusToReview(Long authUserId,Long taskId);
-	
-	public TaskDto changeTaskStatus(Long authUserId,Long taskId,TaskStatus taskStatus);
-	
-	public void deleteTask(Long authUserId, Long taskId);
-	
-	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId,Long assignedMemberId,Long projectId,int pageNo, int pageSize);
-	
-	public TaskDtoPagedResponse getUsersAllTasks( Long userId, int pageNo, int pageSize);
-	
-	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo, int pageSize);
 
-    public TaskDtoPagedResponse getAllUsersTasksByStatus(Long userId,TaskStatus status,int pageNo, int pageSize);
-    
-    public TaskDtoPagedResponse getAllUsersTasksByProjectId(Long userId,Long projectId,int pageNo, int pageSize);
-    
-    public TaskDtoPagedResponse getAllUsersTasksByProjectIdAndStatus(Long userId,Long projectId,TaskStatus status,int pageNo, int pageSize);
+	public TaskDto changeTaskStatusToDone(Long authUserId, Long taskId);
+
+	public TaskDto changeTaskStatusToReview(Long authUserId, Long taskId);
+
+	public TaskDto changeTaskStatus(Long authUserId, Long taskId, TaskStatus taskStatus);
+
+	public void deleteTask(Long authUserId, Long taskId);
+
+	public TaskDtoPagedResponse getAllProjectMembersTaskByProject(Long authUserId, Long assignedMemberId,
+			Long projectId, int pageNo, int pageSize);
+
+	public TaskDtoPagedResponse getUsersAllTasks(Long userId, int pageNo, int pageSize);
+
+	public TaskDtoPagedResponse getAuthenticatedMembersTasksByProject(Long authUserId, Long projectId, int pageNo,
+			int pageSize);
+
+	public TaskDtoPagedResponse getAllUsersTasksByStatus(Long userId, TaskStatus status, int pageNo, int pageSize);
+
+	public TaskDtoPagedResponse getAllUsersTasksByProjectId(Long userId, Long projectId, int pageNo, int pageSize);
+
+	public TaskDtoPagedResponse getAllUsersTasksByProjectIdAndStatus(Long userId, Long projectId, TaskStatus status,
+			int pageNo, int pageSize);
 
 }

@@ -32,6 +32,7 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.dto.UserInfoResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.EmailChangeToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.EmailVerificationToken;
 import com.enesdernek.proje_yonetim_sistemi.entity.PasswordResetToken;
@@ -52,6 +53,9 @@ import com.enesdernek.proje_yonetim_sistemi.repository.ConnectionRequestReposito
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailChangeTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.EmailVerificationTokenRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.PasswordResetTokenRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.ProjectMemberRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.ProjectRepository;
+import com.enesdernek.proje_yonetim_sistemi.repository.TaskRepository;
 import com.enesdernek.proje_yonetim_sistemi.repository.UserRepository;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.EmailService;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.UserService;
@@ -96,6 +100,12 @@ public class UserManager implements UserService {
 
 	@Autowired
 	private FileStorageManager fileStorageManager;
+	
+	@Autowired
+	private TaskRepository taskRepository;
+	
+	@Autowired
+	private ProjectMemberRepository projectMemberRepository;
 
 	@Override
 	@Transactional
@@ -412,6 +422,21 @@ public class UserManager implements UserService {
 	public UserDto getUserByUserId(Long userId) {
 		User user = this.userRepository.findById(userId).orElseThrow(()->new NotFoundException("Kullanıcı bulunamadı."));
 		return this.userMapper.toDto(user);
+	}
+
+	@Override
+	public UserInfoResponse getUserInfos(Long userId) {
+		UserInfoResponse response = new UserInfoResponse();
+		
+		long totalTasks = this.taskRepository.countByAssignedMember_User_UserId(userId);
+		long totalProjectMemberships = this.projectMemberRepository.countByUser_UserId(userId);
+		long totalConnections = this.connectionRepository.countConnectionsByUserId(userId);
+		
+		response.setTotalConnections(totalConnections);
+		response.setTotalProjectMemberships(totalProjectMemberships);
+		response.setTotalTasks(totalTasks);
+		
+		return response;
 	}
 
 }

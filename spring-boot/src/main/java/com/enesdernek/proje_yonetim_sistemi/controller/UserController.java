@@ -27,6 +27,7 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.dto.UserInfoResponse;
 import com.enesdernek.proje_yonetim_sistemi.entity.User;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 import com.enesdernek.proje_yonetim_sistemi.service.abstracts.UserService;
@@ -205,5 +206,16 @@ public class UserController {
 		SuccessDataResult<UserDto> result = new SuccessDataResult<UserDto>(
 				this.userService.getUserByUserId(userId), "Kullanıcı getirildi.");
 		return new ResponseEntity<SuccessDataResult<UserDto>>(result, HttpStatus.OK);
+	}
+	
+	@GetMapping("/get-user-infos")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<SuccessDataResult<UserInfoResponse>> getUserInfos(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		Long userId = user.getUserId();
+		
+		SuccessDataResult<UserInfoResponse> result = new SuccessDataResult<UserInfoResponse>(
+				this.userService.getUserInfos(userId), "Kullanıcı verileri getirildi.");
+		return new ResponseEntity<SuccessDataResult<UserInfoResponse>>(result, HttpStatus.OK);
 	}
 }

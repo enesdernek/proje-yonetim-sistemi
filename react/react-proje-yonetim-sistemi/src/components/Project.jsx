@@ -13,6 +13,7 @@ import { changeMembersRole, deleteMemberFromProject, leaveProject } from "../red
 import EditIcon from '@mui/icons-material/Edit';
 import { Tooltip } from "@mui/material";
 import PreviewIcon from '@mui/icons-material/Preview';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -248,6 +249,20 @@ function Project() {
                                     <EditIcon sx={{ mr: 1 }} /> Projeyi Güncelle
                                 </Button>
 
+                                <Button
+                                    variant="contained"
+                                    sx={{
+                                        textTransform: "none",
+                                        backgroundColor: "#d32f2f",       
+                                        color: "white",
+                                        '&:hover': {
+                                            backgroundColor: "#b71c1c",    
+                                        },
+                                    }}
+                                >
+                                    <BarChartIcon sx={{ mr: 1 }} /> Proje İstatistikleri
+                                </Button>
+
                                 <Button onClick={() => navigate(`/projects/${projectId}/project-settings`)} variant="contained" color="primary" sx={{ textTransform: "none" }}>
                                     <SettingsIcon sx={{ mr: 1 }} /> Proje Ayarları
                                 </Button>
@@ -377,7 +392,7 @@ function Project() {
                         direction={{ xs: "column", sm: "row" }}
                         spacing={1}
                         sx={{
-                            ml: { sm: "auto" },     
+                            ml: { sm: "auto" },
                             width: { xs: "100%", sm: "auto" },
                         }}
                         onClick={(e) => e.stopPropagation()}

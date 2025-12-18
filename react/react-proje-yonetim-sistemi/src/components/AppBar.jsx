@@ -75,7 +75,7 @@ export default function MenuAppBar({ onMenuClick }) {
         getUsersRecievedConnectionRequests({
           token,
           pageNo: 1,
-          pageSize: 10, 
+          pageSize: 10,
         })
       );
     }
@@ -90,13 +90,28 @@ export default function MenuAppBar({ onMenuClick }) {
             edge="start"
             color="inherit"
             aria-label="menu"
-            sx={{ mr: 2, display: { xs: 'block', md: 'none' } }} // xs’de görünür, md ve üstü gizli
-            onClick={onMenuClick}  // Drawer açma fonksiyonu
+            sx={{ mr: 2, display: { xs: 'block', md: 'none' } }} 
+            onClick={onMenuClick}  
           >
             <MenuIcon />
           </IconButton>
-          <Typography onClick={() => navigate("/")} variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Proje Yönetim Sistemi
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography
+              component="span"
+              onClick={() => navigate("/")}
+              sx={{
+                cursor: 'pointer',
+                px: 1,
+                borderRadius: 1,
+                transition: 'background-color 0.3s, color 0.3s',
+                '&:hover': {
+                  color: 'rgba(255, 255, 255, 0.8)', 
+                },
+                fontSize: "26px"
+              }}
+            >
+              Proje Yönetim Sistemi
+            </Typography>
           </Typography>
 
           {

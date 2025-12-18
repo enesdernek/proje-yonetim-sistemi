@@ -11,6 +11,7 @@ import com.enesdernek.proje_yonetim_sistemi.dto.UserDto;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoAuthIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoIU;
 import com.enesdernek.proje_yonetim_sistemi.dto.UserDtoPagedResponse;
+import com.enesdernek.proje_yonetim_sistemi.dto.UserInfoResponse;
 import com.enesdernek.proje_yonetim_sistemi.jwt.AuthResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,6 +54,8 @@ public interface UserService {
 	public UserDtoPagedResponse searchUsersUsernameContains(String searchInput);
 	
 	public UserDto getUserByUserId(Long userId);
+	
+	public UserInfoResponse getUserInfos(Long userId);
 	
 
 }

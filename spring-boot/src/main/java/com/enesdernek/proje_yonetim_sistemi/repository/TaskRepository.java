@@ -75,7 +75,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             Pageable pageable
     );
     
-    
+    long countByAssignedMember_User_UserId(Long userId);
+
 
     
 

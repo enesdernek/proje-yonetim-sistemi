@@ -9,6 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import LinkIcon from '@mui/icons-material/Link';
 
 function Sidebar() {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ function Sidebar() {
     const items = [
         { id: "projects", label: "Projelerim", icon: <DashboardIcon />, path: "/projects" },
         { id: "tasks", label: "Görevlerim", icon: <AssignmentIcon />, path: "/tasks" },
+        { id: "connections", label: "Bağlantılarım", icon: <LinkIcon />, path: "/connections" },
     ];
 
     // URL path'e göre selected item otomatik belirlensin
@@ -33,7 +35,7 @@ function Sidebar() {
             component="nav"
             subheader={
                 <ListSubheader component="div">
-                    Menü
+                    Dashboard
                 </ListSubheader>
             }
         >

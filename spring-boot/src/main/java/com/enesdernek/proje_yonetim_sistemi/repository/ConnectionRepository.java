@@ -36,5 +36,13 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
      boolean existsConnectionBetweenUsers(@Param("userId1") Long userId1,
                                           @Param("userId2") Long userId2);
     
+    @Query("""
+    	    SELECT COUNT(c)
+    	    FROM Connection c
+    	    WHERE c.userId = :userId
+    	       OR c.connectedUserId = :userId
+    	""")
+    	long countConnectionsByUserId(@Param("userId") Long userId);
+    
 
 }
