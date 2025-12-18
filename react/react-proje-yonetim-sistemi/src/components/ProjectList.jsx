@@ -66,6 +66,14 @@ function ProjectList() {
         COMPLETED: "#6a1b9a",
     };
 
+    const STATUS_BG_COLORS = {
+        PLANNING: "rgba(25, 118, 210, 0.08)",
+        IN_PROGRESS: "rgba(30, 136, 229, 0.08)",
+        ON_HOLD: "rgba(237, 108, 2, 0.08)",
+        CANCELLED: "rgba(211, 47, 47, 0.08)",
+        COMPLETED: "rgba(56, 142, 60, 0.08)",
+    };
+
     useEffect(() => {
         dispatch(getProjectsByUserId({ pageNo: page, pageSize: 10, token }));
     }, [page]);
@@ -131,11 +139,17 @@ function ProjectList() {
                                         p: 1,
                                         cursor: "pointer",
                                         transition: "0.2s ease",
+                                        backgroundColor:
+                                            STATUS_BG_COLORS[project.status] || "transparent",
+
                                         "&:hover": {
                                             boxShadow: 4,
                                             transform: "scale(1.01)",
-                                            backgroundColor: "rgba(0,0,0,0.03)",
-                                        }
+                                            backgroundColor:
+                                                STATUS_BG_COLORS[project.status]
+                                                    ? STATUS_BG_COLORS[project.status].replace("0.08", "0.15")
+                                                    : "rgba(0,0,0,0.03)",
+                                        },
                                     }}
                                     onClick={() => navigate(`/projects/${project.projectId}`)}
                                 >

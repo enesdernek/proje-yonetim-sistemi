@@ -250,14 +250,14 @@ function Project() {
                                 </Button>
 
                                 <Button
-                                onClick={()=>navigate("/projects/"+projectId+"/project-statistics")}
+                                    onClick={() => navigate("/projects/" + projectId + "/project-statistics")}
                                     variant="contained"
                                     sx={{
                                         textTransform: "none",
-                                        backgroundColor: "#d32f2f",       
+                                        backgroundColor: "#d32f2f",
                                         color: "white",
                                         '&:hover': {
-                                            backgroundColor: "#b71c1c",    
+                                            backgroundColor: "#b71c1c",
                                         },
                                     }}
                                 >
@@ -286,7 +286,7 @@ function Project() {
                         <Chip
                             label={STATUS_LABELS[project.status] || project.status}
                             sx={{
-                                backgroundColor: "#e3f2fd", 
+                                backgroundColor: "#e3f2fd",
                                 color: STATUS_COLORS[project.status] || "#1976d2",
                                 fontWeight: 600,
                             }}
@@ -350,7 +350,7 @@ function Project() {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
-                                flexDirection: { xs: "column", sm: "row" }, 
+                                flexDirection: { xs: "column", sm: "row" },
                                 mt: 1,
                             }}
                         >
@@ -360,7 +360,7 @@ function Project() {
                                     textTransform: "none",
                                     backgroundColor: "#BAE1FF",
                                     color: "black",
-                                    width: { xs: "100%", sm: "auto" }, 
+                                    width: { xs: "100%", sm: "auto" },
                                 }}
                                 onClick={() => {
                                     navigate(`/projects/${projectId}/my-tasks/${userId}`);
@@ -388,13 +388,14 @@ function Project() {
                         </Box>
 
                     </Box>
-
                     <Stack
-                        direction={{ xs: "column", sm: "row" }}
+                        direction="row"
                         spacing={1}
                         sx={{
                             ml: { sm: "auto" },
-                            width: { xs: "100%", sm: "auto" },
+                            width: "100%",
+                            flexWrap: "wrap",         
+                            gap: 0,                    
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -417,7 +418,6 @@ function Project() {
 
                                     }}
                                 >
-                                    {/* Profil resmi */}
                                     <CardMedia
                                         onClick={() =>
                                             !isCurrentUser && navigate("/users-profile/" + m.userDto.userId)

@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUserList, searchUser } from "../redux/slices/userSlice";
 import { isConnected, deleteConnection } from "../redux/slices/connectionSlice";
-import { createConnectionRequest, deleteConnectionRequest } from "../redux/slices/connectionRequestSlice";
+import { createConnectionRequest, deleteConnectionRequest ,clearConnectionRequestsState} from "../redux/slices/connectionRequestSlice";
 import { useNavigate } from "react-router-dom";
 
 function SearchUserPage() {
@@ -49,6 +49,10 @@ function SearchUserPage() {
     useEffect(() => {
         dispatch(clearUserList());
     }, [navigate, dispatch]);
+
+    useEffect(() => {
+        dispatch(clearConnectionRequestsState());
+    }, [dispatch]);
 
     return (
         <Box sx={{ maxWidth: 700, mx: "auto", mt: 4, p: 2 }}>

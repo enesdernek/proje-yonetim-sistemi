@@ -132,7 +132,7 @@ export const createConnectionRequest = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
 
-      return response.data.data; 
+      return response.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Bağlantı isteği gönderilirken bir hata oluştu"
@@ -171,6 +171,12 @@ export const connectionRequestSlice = createSlice({
   name: 'connectionRequest',
   initialState,
   reducers: {
+    clearConnectionRequestsState: (state) => {
+      state.sendedConnectionRequests = [];
+      state.recievedConnectionRequests = [];
+      state.error = null;
+      state.successMessage = null;
+    }
 
   }, extraReducers: (builder) => {
     builder
@@ -268,7 +274,7 @@ export const connectionRequestSlice = createSlice({
       })
     builder.addCase(deleteConnectionRequest.rejected, (state, action) => {
       state.loading = false;
-      
+
 
       if (action.payload === "İstek önceden kabul edilmiş") {
         state.sendedConnectionRequests = state.sendedConnectionRequests.filter(
@@ -286,7 +292,7 @@ export const connectionRequestSlice = createSlice({
       .addCase(createConnectionRequest.fulfilled, (state, action) => {
         state.loading = false;
         const newRequest = action.payload;
-        state.sendedConnectionRequests.unshift(newRequest); 
+        state.sendedConnectionRequests.unshift(newRequest);
         state.successMessage = "Bağlantı isteği gönderildi.";
       })
       .addCase(createConnectionRequest.rejected, (state, action) => {
@@ -296,6 +302,6 @@ export const connectionRequestSlice = createSlice({
   },
 })
 
-export const { } = connectionRequestSlice.actions
+export const {clearConnectionRequestsState } = connectionRequestSlice.actions
 
 export default connectionRequestSlice.reducer
