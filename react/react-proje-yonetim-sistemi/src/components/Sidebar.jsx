@@ -10,6 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LinkIcon from '@mui/icons-material/Link';
+import { Divider } from '@mui/material';
 
 function Sidebar() {
     const navigate = useNavigate();
@@ -30,14 +31,15 @@ function Sidebar() {
 
     return (
         <List
-            sx={{ width: '100%', bgcolor: 'background.paper' }}
+            sx={{ width: '100%', bgcolor: "#D6EAF8",height:"100%",minHeight:"100vh" }}
             component="nav"
             subheader={
-                <ListSubheader component="div">
+                <ListSubheader sx={{bgcolor:"#D6EAF8"}} component="div">
                     Dashboard
                 </ListSubheader>
             }
         >
+            <Divider></Divider>
             {items.map((item) => (
                 <ListItemButton
                     key={item.id}

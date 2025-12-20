@@ -148,7 +148,6 @@ function ProjectStatistics() {
                   </Avatar>
                   <Box>
                     <Typography>{stats.projectDto.creator.username}</Typography>
-                    <Typography variant="body2">{stats.projectDto.creator.email}</Typography>
                   </Box>
                 </Stack>
               </Stack>
